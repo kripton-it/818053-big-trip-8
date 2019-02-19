@@ -1,7 +1,7 @@
 # Личный проект «Большое путешествие» [![Build status][travis-image]][travis-url]
 
 * Студент: [Михаил Шардин](https://up.htmlacademy.ru/ecmascript/8/user/818053).
-* Наставник: [Владимир Коршунов](https://up.htmlacademy.ru/ecmascript/8/user/83596).
+* Наставник: [Владимир Коршунов](https://htmlacademy.ru/profile/bekobou).
 
 ---
 
