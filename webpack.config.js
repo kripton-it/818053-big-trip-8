@@ -1,5 +1,4 @@
 const path = require(`path`);
-const HtmlWebpackPlugin = require(`html-webpack-plugin`);
 
 module.exports = {
   mode: `development`,
@@ -11,9 +10,6 @@ module.exports = {
   devtool: `source-map`,
   devServer: {
     contentBase: path.join(__dirname, `public`),
-    watchContentBase: true,
-    publicPath: `http://localhost:8080/`,
-    hot: true,
-    compress: true
+    publicPath: `http://localhost:8080/`
   }
 };
