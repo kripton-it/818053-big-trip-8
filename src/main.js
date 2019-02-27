@@ -1,6 +1,7 @@
-import getRandomInteger from './utils.js';
+import {getRandomInteger} from './utils.js';
 import getFilter from './get-filter.js';
 import getPoint from './get-point.js';
+import {generatePoint} from './data.js';
 
 const filters = [
   {
@@ -38,3 +39,6 @@ const tripFilterClickHandler = (evt) => {
   fillDay(getRandomInteger(1, 4));
 };
 tripFilterElement.addEventListener(`click`, tripFilterClickHandler);
+
+const point = generatePoint();
+console.log(point);
