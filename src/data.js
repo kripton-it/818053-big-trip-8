@@ -1,4 +1,4 @@
-import {getRandomInteger, getRandomElement, getMixedSubarray, getRandomDate, getRandomDuration} from './utils.js';
+import {getRandomInteger, getRandomElement, getMixedSubarray, getRandomDate} from './utils.js';
 
 const config = {
   date: {
@@ -30,7 +30,7 @@ const titles = [`Taxi to Airport`, `Flight to Geneva`, `Check into hotel`, `Supp
 
 const offers = [`Add luggage`, `Switch to comfort class`, `Add meal`, `Choose seats`];
 
-const types = new Map([
+export const types = new Map([
   [`Taxi`, `🚕`],
   [`Bus`, `🚌`],
   [`Train`, `🚂`],
@@ -49,8 +49,10 @@ export const generatePoint = () => ({
   title: getRandomElement(titles),
   description: `${getMixedSubarray(description.split(`. `), 3, 1).join(`. `)}.`.replace(`..`, `.`),
   type: getRandomElement([...types.keys()]),
+  // дата начала (в мс)
   date: getRandomDate(config.date.daysForward),
-  duration: getRandomDuration(config.durationHours.MAX, config.durationHours.MIN),
+  // длительность (в часах)
+  duration: getRandomInteger(config.durationHours.MAX, config.durationHours.MIN),
   price: config.price.regular.STEP * getRandomInteger(config.price.regular.MAX / config.price.regular.STEP, config.price.regular.MIN / config.price.regular.STEP),
   offers: getMixedSubarray(offers, 2).map((offer) => ({
     caption: offer,

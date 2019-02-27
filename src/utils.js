@@ -31,5 +31,3 @@ export const getMixedSubarray = (array, max, min = 0) => getMixedArray(array).sl
 // рандомный timestamp в диапазоне [текущая дата + daysFrom дней; текущая дата + daysTo дней] с точностью до минуты (в мс)
 export const getRandomDate = (daysTo, daysFrom = 1) => Date.now() + getRandomInteger(daysTo * Unit.day * (Unit.hour - 1), daysFrom * Unit.day * (Unit.hour - 1)) * Unit.minute * Unit.second;
 
-// рандомная длительность в диапазоне [minHours; maxHours] с точностью до часов (в мс)
-export const getRandomDuration = (maxHours, minHours = 1) => getRandomInteger(maxHours, minHours) * Unit.hour * Unit.minute * Unit.second;

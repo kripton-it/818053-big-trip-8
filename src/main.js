@@ -28,7 +28,7 @@ tripFilterElement.insertAdjacentHTML(
 
 // отрисовка точек
 const fillDay = (number) => {
-  tripDayElement.insertAdjacentHTML(`beforeend`, getPoint().repeat(number));
+  tripDayElement.insertAdjacentHTML(`beforeend`, (new Array(number)).fill(``).map(() => getPoint(generatePoint())).join(``));
 };
 fillDay(pointsNumber);
 
@@ -40,5 +40,3 @@ const tripFilterClickHandler = (evt) => {
 };
 tripFilterElement.addEventListener(`click`, tripFilterClickHandler);
 
-const point = generatePoint();
-console.log(point);
