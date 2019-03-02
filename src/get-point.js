@@ -1,4 +1,5 @@
 import {types} from './data.js';
+import {generatePoint} from './data.js';
 
 const getTimetable = (time, duration) => {
   const date = new Date(time);
@@ -7,7 +8,7 @@ const getTimetable = (time, duration) => {
   return `${hours < 10 ? `0${hours}` : hours}:${minutes < 10 ? `0${minutes}` : minutes}&nbsp;&mdash; ${hours + duration < 10 ? `0${hours + duration}` : hours + duration}:${minutes < 10 ? `0${minutes}` : minutes}`;
 };
 
-export default (point) => {
+const getPoint = (point) => {
   return `<article class="trip-point">
   <i class="trip-icon">${types.get(point.type)}</i>
   <h3 class="trip-point__title">${point.title}</h3>
@@ -23,4 +24,6 @@ export default (point) => {
   </ul>
 </article>`;
 };
+
+export default (number) => (new Array(number)).fill(``).map(() => getPoint(generatePoint()));
 
