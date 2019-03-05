@@ -45,7 +45,8 @@ export const types = new Map([
 
 const description = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. Aliquam id orci ut lectus varius viverra. Nullam nunc ex, convallis sed finibus eget, sollicitudin eget ante. Phasellus eros mauris, condimentum sed nibh vitae, sodales efficitur ipsum. Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui. Sed sed nisi sed augue convallis suscipit in sed felis. Aliquam erat volutpat. Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus.`;
 
-export const generatePoint = () => ({
+// генерирую один объект с данными для одной точки
+const generatePoint = () => ({
   title: getRandomElement(titles),
   description: `${getMixedSubarray(description.split(`. `), 3, 1).join(`. `)}.`.replace(`..`, `.`),
   type: getRandomElement([...types.keys()]),
@@ -60,4 +61,8 @@ export const generatePoint = () => ({
   })),
   photos: (new Array(getRandomInteger(config.photos.MAX, config.photos.MIN))).fill(``).map(() => `http://picsum.photos/300/150?r=${Math.random()}`),
 });
+
+// генерирую массив объектов с данными для заданного количества точек
+export const generatePoints = (number) => (new Array(number)).fill(``).map(() => generatePoint());
+
 

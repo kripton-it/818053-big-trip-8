@@ -1,6 +1,7 @@
 import {getRandomInteger} from './utils.js';
+import {generatePoints} from './data.js';
 import getFilter from './get-filter.js';
-import getPoints from './get-point.js';
+import getPoint from './get-point.js';
 
 const filters = [
   {
@@ -27,7 +28,7 @@ tripFilterElement.insertAdjacentHTML(
 
 // отрисовка точек
 const renderPoints = (where, number) => {
-  where.insertAdjacentHTML(`beforeend`, getPoints(number).join(``));
+  where.insertAdjacentHTML(`beforeend`, generatePoints(number).map(getPoint).join(``));
 };
 renderPoints(tripDayElement, POINTS_NUMBER);
 
