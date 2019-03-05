@@ -1,5 +1,5 @@
 import {getRandomInteger} from './utils.js';
-import {generatePoints} from './data.js';
+import generatePoints from './generate-points.js';
 import getFilter from './get-filter.js';
 import getPoint from './get-point.js';
 
@@ -27,16 +27,16 @@ tripFilterElement.insertAdjacentHTML(
 );
 
 // отрисовка точек
-const renderPoints = (where, number) => {
-  where.insertAdjacentHTML(`beforeend`, generatePoints(number).map(getPoint).join(``));
+const renderPoints = (points, container) => {
+  container.insertAdjacentHTML(`beforeend`, points.map(getPoint).join(``));
 };
-renderPoints(tripDayElement, POINTS_NUMBER);
+renderPoints(generatePoints(POINTS_NUMBER), tripDayElement);
 
 // обработка кликов по фильтрам
 const tripFilterClickHandler = (evt) => {
   evt.preventDefault();
   tripDayElement.innerHTML = ``;
-  renderPoints(tripDayElement, getRandomInteger(1, 4));
+  renderPoints(generatePoints(getRandomInteger(1, 4)), tripDayElement);
 };
 tripFilterElement.addEventListener(`click`, tripFilterClickHandler);
 

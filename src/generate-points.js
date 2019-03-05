@@ -1,4 +1,4 @@
-import {getRandomInteger, getRandomElement, getMixedSubarray, getRandomDate} from './utils.js';
+import {types, getRandomInteger, getRandomElement, getMixedSubarray, getRandomDate} from './utils.js';
 
 const config = {
   date: {
@@ -30,19 +30,6 @@ const titles = [`Taxi to Airport`, `Flight to Geneva`, `Check into hotel`, `Supp
 
 const offers = [`Add luggage`, `Switch to comfort class`, `Add meal`, `Choose seats`];
 
-export const types = new Map([
-  [`Taxi`, `🚕`],
-  [`Bus`, `🚌`],
-  [`Train`, `🚂`],
-  [`Ship`, `🛳️`],
-  [`Transport`, `🚊`],
-  [`Drive`, `🚗`],
-  [`Flight`, `✈️`],
-  [`Check-in`, `🏨`],
-  [`Sightseeing`, `🏛️`],
-  [`Restaurant `, `🍴`],
-]);
-
 const description = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. Aliquam id orci ut lectus varius viverra. Nullam nunc ex, convallis sed finibus eget, sollicitudin eget ante. Phasellus eros mauris, condimentum sed nibh vitae, sodales efficitur ipsum. Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui. Sed sed nisi sed augue convallis suscipit in sed felis. Aliquam erat volutpat. Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus.`;
 
 // генерирую один объект с данными для одной точки
@@ -63,6 +50,6 @@ const generatePoint = () => ({
 });
 
 // генерирую массив объектов с данными для заданного количества точек
-export const generatePoints = (number) => (new Array(number)).fill(``).map(() => generatePoint());
+export default (number) => (new Array(number)).fill(``).map(() => generatePoint());
 
 

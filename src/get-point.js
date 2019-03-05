@@ -1,4 +1,4 @@
-import {types} from './data.js';
+import {types} from './utils.js';
 
 const getTimetable = (time, duration) => {
   const date = new Date(time);

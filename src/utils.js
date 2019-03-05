@@ -5,6 +5,19 @@ const Unit = {
   second: 1000
 };
 
+export const types = new Map([
+  [`Taxi`, `🚕`],
+  [`Bus`, `🚌`],
+  [`Train`, `🚂`],
+  [`Ship`, `🛳️`],
+  [`Transport`, `🚊`],
+  [`Drive`, `🚗`],
+  [`Flight`, `✈️`],
+  [`Check-in`, `🏨`],
+  [`Sightseeing`, `🏛️`],
+  [`Restaurant `, `🍴`],
+]);
+
 // случайное целое число [min; max]
 export const getRandomInteger = (max, min = 0) => Math.floor(min + Math.random() * (max - min + 1));
 
