@@ -1,8 +1,10 @@
 import {getRandomInteger} from './utils.js';
 import generatePoints from './generate-points.js';
 import getFilter from './get-filter.js';
-import getPoint from './get-point.js';
+import Point from './Point.js';
+import PointEdit from './PointEdit.js';
 
+const POINTS_NUMBER = 4;
 const filters = [
   {
     caption: `everything`,
@@ -15,8 +17,6 @@ const filters = [
     caption: `past`,
   },
 ];
-
-const POINTS_NUMBER = 4;
 const tripFilterElement = document.querySelector(`.trip-filter`);
 const tripDayElement = document.querySelector(`.trip-day__items`);
 
@@ -28,7 +28,29 @@ tripFilterElement.insertAdjacentHTML(
 
 // отрисовка точек
 const renderPoints = (points, container) => {
-  container.insertAdjacentHTML(`beforeend`, points.map(getPoint).join(``));
+  const fragment = document.createDocumentFragment();
+  points.forEach((item) => {
+    const point = new Point(item);
+    const pointEdit = new PointEdit(item);
+    point.onClick = () => {
+      pointEdit.render();
+      container.replaceChild(pointEdit.element, point.element);
+      point.unrender();
+    };
+    pointEdit.onSubmit = () => {
+      point.render();
+      container.replaceChild(point.element, pointEdit.element);
+      pointEdit.unrender();
+    };
+    pointEdit.onReset = () => {
+      point.render();
+      container.replaceChild(point.element, pointEdit.element);
+      pointEdit.unrender();
+    };
+    point.render();
+    fragment.appendChild(point.element);
+  });
+  container.appendChild(fragment);
 };
 renderPoints(generatePoints(POINTS_NUMBER), tripDayElement);
 

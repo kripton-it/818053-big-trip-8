@@ -1,11 +1,4 @@
-import {types} from './utils.js';
-
-const getTimetable = (time, duration) => {
-  const date = new Date(time);
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  return `${hours < 10 ? `0${hours}` : hours}:${minutes < 10 ? `0${minutes}` : minutes}&nbsp;&mdash; ${hours + duration < 10 ? `0${hours + duration}` : hours + duration}:${minutes < 10 ? `0${minutes}` : minutes}`;
-};
+import {types, getTimetable} from './utils.js';
 
 export default (point) => {
   return `<article class="trip-point">
