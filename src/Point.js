@@ -1,7 +1,8 @@
 import {types, getTimetable} from './utils.js';
-
-export default class Point {
+import Component from './Component.js';
+export default class Point extends Component {
   constructor(point) {
+    super();
     this._name = point.name;
     this._description = point.description;
     this._type = point.type;
@@ -10,7 +11,6 @@ export default class Point {
     this._price = point.price;
     this._offers = point.offers;
     this._photos = point.photos;
-    this._element = null;
     this._onClick = null;
     this._onPointClick = this._onPointClick.bind(this);
   }
@@ -20,10 +20,6 @@ export default class Point {
     if (typeof this._onClick === `function`) {
       this._onClick();
     }
-  }
-
-  get element() {
-    return this._element;
   }
 
   set onClick(fn) {
@@ -47,24 +43,11 @@ export default class Point {
     </article>`;
   }
 
-  bind() {
+  createListeners() {
     this._element.addEventListener(`click`, this._onPointClick);
   }
 
-  unbind() {
+  removeListeners() {
     this._element.removeEventListener(`click`, this._onPointClick);
-  }
-
-  render() {
-    const newElement = document.createElement(`div`);
-    newElement.innerHTML = this.template;
-    this._element = newElement.firstChild;
-    this.bind();
-    return this._element;
-  }
-
-  unrender() {
-    this.unbind();
-    this._element = null;
   }
 }
