@@ -31,21 +31,21 @@ const renderPoints = (points, container) => {
   const fragment = document.createDocumentFragment();
   points.forEach((item) => {
     const point = new Point(item);
-    const pointEdit = new PointEdit(item);
     point.onClick = () => {
+      const pointEdit = new PointEdit(item);
+      pointEdit.onSubmit = () => {
+        point.render();
+        container.replaceChild(point.element, pointEdit.element);
+        pointEdit.unrender();
+      };
+      pointEdit.onReset = () => {
+        point.render();
+        container.replaceChild(point.element, pointEdit.element);
+        pointEdit.unrender();
+      };
       pointEdit.render();
       container.replaceChild(pointEdit.element, point.element);
       point.unrender();
-    };
-    pointEdit.onSubmit = () => {
-      point.render();
-      container.replaceChild(point.element, pointEdit.element);
-      pointEdit.unrender();
-    };
-    pointEdit.onReset = () => {
-      point.render();
-      container.replaceChild(point.element, pointEdit.element);
-      pointEdit.unrender();
     };
     point.render();
     fragment.appendChild(point.element);

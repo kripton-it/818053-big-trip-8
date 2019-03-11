@@ -1,7 +1,9 @@
 import {types, getTimetable} from './utils.js';
+import Component from './Component.js';
 
-export default class PointEdit {
+export default class PointEdit extends Component {
   constructor(point) {
+    super();
     this._name = point.name;
     this._description = point.description;
     this._type = point.type;
@@ -10,7 +12,6 @@ export default class PointEdit {
     this._price = point.price;
     this._offers = point.offers;
     this._photos = point.photos;
-    this._element = null;
     this._onSubmit = null;
     this._onReset = null;
     this._onFormSubmit = this._onFormSubmit.bind(this);
@@ -37,10 +38,6 @@ export default class PointEdit {
 
   set onReset(fn) {
     this._onReset = fn;
-  }
-
-  get element() {
-    return this._element;
   }
 
   set onSubmit(fn) {
@@ -150,26 +147,13 @@ export default class PointEdit {
     </article>`;
   }
 
-  bind() {
+  createListeners() {
     this._element.querySelector(`form`).addEventListener(`submit`, this._onFormSubmit);
     this._element.querySelector(`form`).addEventListener(`reset`, this._onFormReset);
   }
 
-  unbind() {
+  removeListeners() {
     this._element.querySelector(`form`).removeEventListener(`submit`, this._onFormSubmit);
     this._element.querySelector(`form`).removeEventListener(`reset`, this._onFormReset);
-  }
-
-  render() {
-    const newElement = document.createElement(`div`);
-    newElement.innerHTML = this.template;
-    this._element = newElement.firstChild;
-    this.bind();
-    return this._element;
-  }
-
-  unrender() {
-    this.unbind();
-    this._element = null;
   }
 }
