@@ -1,5 +1,6 @@
-import {types, getTimetable} from './utils.js';
+import {types} from './utils.js';
 import Component from './Component.js';
+import moment from 'moment';
 export default class Point extends Component {
   constructor(point) {
     super();
@@ -31,7 +32,7 @@ export default class Point extends Component {
       <i class="trip-icon">${types.get(this._type).icon}</i>
       <h3 class="trip-point__title">${`${this._type} ${types.get(this._type).preposition} ${this._name}`}</h3>
       <p class="trip-point__schedule">
-        <span class="trip-point__timetable">${getTimetable(this._date, this._duration)}</span>
+        <span class="trip-point__timetable">${moment(this._date).format(`HH:mm`)}</span>
         <span class="trip-point__duration">${this._duration}h 00m</span>
       </p>
       <p class="trip-point__price">&euro;&nbsp;${this._price}</p>
@@ -52,7 +53,6 @@ export default class Point extends Component {
   }
 
   update(data) {
-    console.log(data);
     this._name = data.name;
     this._description = data.description;
     this._type = data.type.replace(data.type[0], data.type[0].toUpperCase());

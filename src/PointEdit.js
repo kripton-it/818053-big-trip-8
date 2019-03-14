@@ -1,5 +1,7 @@
-import {types, getTimetable} from './utils.js';
+import {types} from './utils.js';
 import Component from './Component.js';
+import flatpickr from 'flatpickr';
+import moment from 'moment';
 
 export default class PointEdit extends Component {
   constructor(point) {
@@ -112,7 +114,7 @@ export default class PointEdit extends Component {
 
           <label class="point__time">
             choose time
-            <input class="point__input" type="text" value="${getTimetable(this._date, this._duration)}" name="time" placeholder="00:00 — 00:00">
+            <input class="point__input" type="text" value="${moment(this._date).format(`HH:mm`)}" name="time" placeholder="00:00 — 00:00">
           </label>
 
           <label class="point__price">
@@ -155,6 +157,10 @@ export default class PointEdit extends Component {
   createListeners() {
     this._element.querySelector(`form`).addEventListener(`submit`, this._onFormSubmit);
     this._element.querySelector(`form`).addEventListener(`reset`, this._onFormReset);
+    const pointInput = this.element.querySelector(`input[name="time"]`);
+    pointInput.style.outline = `1px solid red`;
+
+    flatpickr(pointInput, {enableTime: true, noCalendar: true, altInput: true, altFormat: `H:i`, dateFormat: `H:i`});
   }
 
   removeListeners() {
@@ -177,15 +183,11 @@ export default class PointEdit extends Component {
     const entry = {
       name: ``,
       type: ``,
-      // duration: 0,
-      date: ``,
       price: 0,
-      // description: ``,
       offers: [],
-      // photos: [],
     };
 
-    const taskEditMapper = PointEdit.createMapper(entry);
+    const taskEditMapper = PointEdit.createMapper.call(this, entry);
 
     for (const pair of formData.entries()) {
       const [property, value] = pair;
@@ -199,8 +201,7 @@ export default class PointEdit extends Component {
 
   static createMapper(target) {
     return {
-      // для time - временное решение
-      'time': () => (target.date = Date.now()),
+      'time': (value) => (target.date = new Date(`${moment(this._date).format(`YYYY-MM-DD`)} ${value}`).getTime()),
       'price': (value) => (target.price = value),
       'travel-way': (value) => (target.type = value),
       'offer': (value) => target.offers.push(value),

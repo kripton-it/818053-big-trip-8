@@ -89,10 +89,3 @@ export const getMixedSubarray = (array, max, min = 0) => getMixedArray(array).sl
 // рандомный timestamp в диапазоне [текущая дата + daysFrom дней; текущая дата + daysTo дней] с точностью до минуты (в мс)
 export const getRandomDate = (daysTo, daysFrom = 1) => Date.now() + getRandomInteger(daysTo * Unit.day * (Unit.hour - 1), daysFrom * Unit.day * (Unit.hour - 1)) * Unit.minute * Unit.second;
 
-export const getTimetable = (time, duration) => {
-  const date = new Date(time);
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  return `${hours < 10 ? `0${hours}` : hours}:${minutes < 10 ? `0${minutes}` : minutes}&nbsp;&mdash; ${hours + duration < 10 ? `0${hours + duration}` : hours + duration}:${minutes < 10 ? `0${minutes}` : minutes}`;
-};
-
