@@ -6,7 +6,7 @@ export default class PointEdit extends Component {
     super();
     this._name = point.name;
     this._description = point.description;
-    this._type = point.type;
+    this._type = point.type.replace(point.type[0], point.type[0].toUpperCase());
     this._date = point.date;
     this._duration = point.duration;
     this._price = point.price;
@@ -20,9 +20,14 @@ export default class PointEdit extends Component {
 
   _onFormSubmit(evt) {
     evt.preventDefault();
+    const formData = new FormData(this._element.querySelector(`form`));
+    const newData = this._processForm(formData);
+
     if (typeof this._onSubmit === `function`) {
-      this._onSubmit();
+      this._onSubmit(newData);
     }
+
+    this.update(newData);
   }
 
   _onFormReset(evt) {
@@ -155,5 +160,51 @@ export default class PointEdit extends Component {
   removeListeners() {
     this._element.querySelector(`form`).removeEventListener(`submit`, this._onFormSubmit);
     this._element.querySelector(`form`).removeEventListener(`reset`, this._onFormReset);
+  }
+
+  update(data) {
+    this._name = data.name;
+    this._description = data.description;
+    this._type = data.type.replace(data.type[0], data.type[0].toUpperCase());
+    this._date = data.date;
+    this._duration = data.duration;
+    this._price = data.price;
+    this._offers = data.offers;
+    this._photos = data.photos;
+  }
+
+  _processForm(formData) {
+    const entry = {
+      name: ``,
+      type: ``,
+      // duration: 0,
+      date: ``,
+      price: 0,
+      // description: ``,
+      offers: [],
+      // photos: [],
+    };
+
+    const taskEditMapper = PointEdit.createMapper(entry);
+
+    for (const pair of formData.entries()) {
+      const [property, value] = pair;
+      if (taskEditMapper.hasOwnProperty(property)) {
+        taskEditMapper[property](value);
+      }
+    }
+
+    return entry;
+  }
+
+  static createMapper(target) {
+    return {
+      // для time - временное решение
+      'time': () => (target.date = Date.now()),
+      'price': (value) => (target.price = value),
+      'travel-way': (value) => (target.type = value),
+      'offer': (value) => target.offers.push(value),
+      'destination': (value) => (target.name = value),
+    };
   }
 }

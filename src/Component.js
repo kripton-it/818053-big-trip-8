@@ -34,4 +34,8 @@ export default class Component {
     this.removeListeners();
     this._element = null;
   }
+
+  update() {
+
+  }
 }

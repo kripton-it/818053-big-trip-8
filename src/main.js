@@ -30,10 +30,21 @@ tripFilterElement.insertAdjacentHTML(
 const renderPoints = (points, container) => {
   const fragment = document.createDocumentFragment();
   points.forEach((item) => {
+    console.log(item);
     const point = new Point(item);
     point.onClick = () => {
       const pointEdit = new PointEdit(item);
-      pointEdit.onSubmit = () => {
+      pointEdit.onSubmit = (newObject) => {
+        item.name = newObject.name;
+        // item.description = newObject.description;
+        item.type = newObject.type;
+        item.date = newObject.date;
+        // item.duration = newObject.duration;
+        item.price = newObject.price;
+        item.offers = newObject.offers;
+        // item.photos = newObject.photos;
+
+        point.update(item);
         point.render();
         container.replaceChild(point.element, pointEdit.element);
         pointEdit.unrender();

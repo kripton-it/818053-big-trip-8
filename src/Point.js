@@ -5,7 +5,7 @@ export default class Point extends Component {
     super();
     this._name = point.name;
     this._description = point.description;
-    this._type = point.type;
+    this._type = point.type.replace(point.type[0], point.type[0].toUpperCase());
     this._date = point.date;
     this._duration = point.duration;
     this._price = point.price;
@@ -50,4 +50,17 @@ export default class Point extends Component {
   removeListeners() {
     this._element.removeEventListener(`click`, this._onPointClick);
   }
+
+  update(data) {
+    console.log(data);
+    this._name = data.name;
+    this._description = data.description;
+    this._type = data.type.replace(data.type[0], data.type[0].toUpperCase());
+    this._date = data.date;
+    this._duration = data.duration;
+    this._price = data.price;
+    this._offers = data.offers;
+    this._photos = data.photos;
+  }
 }
+
