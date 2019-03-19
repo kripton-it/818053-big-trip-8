@@ -1,7 +1,18 @@
 import {types} from './utils.js';
-import Component from './Component.js';
+import Component from './component.js';
 import moment from 'moment';
+
+/**
+  * Класс точки маршрута в режиме просмотра.
+  */
 export default class Point extends Component {
+  /**
+   * Создает экземпляр Point.
+   *
+   * @constructor
+   * @param {Object} point - объект с данными точки маршрута
+   * @this  {Point}
+   */
   constructor(point) {
     super();
     this._name = point.name;
@@ -16,6 +27,10 @@ export default class Point extends Component {
     this._onPointClick = this._onPointClick.bind(this);
   }
 
+  /**
+   * Метод-обработчик нажатия на точку маршрута.
+   * @param {Object} evt - объект события Event
+   */
   _onPointClick(evt) {
     evt.preventDefault();
     if (typeof this._onClick === `function`) {
@@ -23,10 +38,19 @@ export default class Point extends Component {
     }
   }
 
+  /**
+   * Сеттер для передачи колбэка по нажатию на точку маршрута.
+   * @param {Function} fn - передаваемая функция-колбэк
+   */
   set onClick(fn) {
     this._onClick = fn;
   }
 
+  /**
+   * Геттер для получения шаблонной строки точки маршрута.
+   *
+   * @return {string} шаблонная строка
+   */
   get template() {
     return `<article class="trip-point">
       <i class="trip-icon">${types.get(this._type).icon}</i>
@@ -44,23 +68,33 @@ export default class Point extends Component {
     </article>`;
   }
 
-  createListeners() {
+  /**
+    * Метод для навешивания обработчиков.
+    */
+  _createListeners() {
     this._element.addEventListener(`click`, this._onPointClick);
   }
 
-  removeListeners() {
+  /**
+    * Метод для удаления обработчиков.
+    */
+  _removeListeners() {
     this._element.removeEventListener(`click`, this._onPointClick);
   }
 
-  update(data) {
-    this._name = data.name;
-    this._description = data.description;
-    this._type = data.type.replace(data.type[0], data.type[0].toUpperCase());
-    this._date = data.date;
-    this._duration = data.duration;
-    this._price = data.price;
-    this._offers = data.offers;
-    this._photos = data.photos;
+  /**
+    * Метод для обновления данных.
+    * @param {Object} point - объект с данными для обновления.
+    */
+  update(point) {
+    this._name = point.name;
+    this._description = point.description;
+    this._type = point.type.replace(point.type[0], point.type[0].toUpperCase());
+    this._date = point.date;
+    this._duration = point.duration;
+    this._price = point.price;
+    this._offers = point.offers;
+    this._photos = point.photos;
   }
 }
 

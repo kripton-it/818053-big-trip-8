@@ -1,9 +1,19 @@
 import {types} from './utils.js';
-import Component from './Component.js';
+import Component from './component.js';
 import flatpickr from 'flatpickr';
 import moment from 'moment';
 
+/**
+  * Класс точки маршрута в режиме редактирования.
+  */
 export default class PointEdit extends Component {
+  /**
+   * Создает экземпляр PointEdit.
+   *
+   * @constructor
+   * @param {Object} point - объект с данными точки маршрута
+   * @this  {PointEdit}
+   */
   constructor(point) {
     super();
     this._name = point.name;
@@ -20,6 +30,10 @@ export default class PointEdit extends Component {
     this._onFormReset = this._onFormReset.bind(this);
   }
 
+  /**
+   * Метод-обработчик нажатия на кнопку Save.
+   * @param {Object} evt - объект события Event
+   */
   _onFormSubmit(evt) {
     evt.preventDefault();
     const formData = new FormData(this._element.querySelector(`form`));
@@ -32,6 +46,10 @@ export default class PointEdit extends Component {
     this.update(newData);
   }
 
+  /**
+   * Метод-обработчик нажатия на кнопку Delete (reset формы).
+   * @param {Object} evt - объект события Event
+   */
   _onFormReset(evt) {
     evt.preventDefault();
     if (typeof this._onReset === `function`) {
@@ -39,18 +57,27 @@ export default class PointEdit extends Component {
     }
   }
 
+  /**
+   * Сеттер для передачи колбэка по нажатию на кнопку Save.
+   * @param {Function} fn - передаваемая функция-колбэк
+   */
   set onSubmit(fn) {
     this._onSubmit = fn;
   }
 
+  /**
+   * Сеттер для передачи колбэка по нажатию на кнопку Delete.
+   * @param {Function} fn - передаваемая функция-колбэк
+   */
   set onReset(fn) {
     this._onReset = fn;
   }
 
-  set onSubmit(fn) {
-    this._onSubmit = fn;
-  }
-
+  /**
+   * Геттер для получения шаблонной строки точки маршрута.
+   *
+   * @return  {string} шаблонная строка
+   */
   get template() {
     const offers = this._offers.map((offer) => `
       <input class="point__offers-input visually-hidden" type="checkbox" id="${offer.caption}" name="offer" value="${offer.caption}">
@@ -154,7 +181,10 @@ export default class PointEdit extends Component {
     </article>`;
   }
 
-  createListeners() {
+  /**
+    * Метод для навешивания обработчиков.
+    */
+  _createListeners() {
     this._element.querySelector(`form`).addEventListener(`submit`, this._onFormSubmit);
     this._element.querySelector(`form`).addEventListener(`reset`, this._onFormReset);
     const pointInput = this.element.querySelector(`input[name="time"]`);
@@ -163,22 +193,34 @@ export default class PointEdit extends Component {
     flatpickr(pointInput, {enableTime: true, noCalendar: true, altInput: true, altFormat: `H:i`, dateFormat: `H:i`});
   }
 
-  removeListeners() {
+  /**
+    * Метод для удаления обработчиков.
+    */
+  _removeListeners() {
     this._element.querySelector(`form`).removeEventListener(`submit`, this._onFormSubmit);
     this._element.querySelector(`form`).removeEventListener(`reset`, this._onFormReset);
   }
 
-  update(data) {
-    this._name = data.name;
-    this._description = data.description;
-    this._type = data.type.replace(data.type[0], data.type[0].toUpperCase());
-    this._date = data.date;
-    this._duration = data.duration;
-    this._price = data.price;
-    this._offers = data.offers;
-    this._photos = data.photos;
+  /**
+    * Метод для обновления данных.
+    * @param {Object} point - объект с данными для обновления.
+    */
+  update(point) {
+    this._name = point.name;
+    this._description = point.description;
+    this._type = point.type.replace(point.type[0], point.type[0].toUpperCase());
+    this._date = point.date;
+    this._duration = point.duration;
+    this._price = point.price;
+    this._offers = point.offers;
+    this._photos = point.photos;
   }
 
+  /**
+   * Вспомогательный метод для конвертации информации из формы в формат, понятный компоненту.
+   * @param {Array} formData - данные из формы (массив массивов [поле, значение])
+   * @return {Object} - объект, в который записана информация из формы
+   */
   _processForm(formData) {
     const entry = {
       name: ``,
@@ -199,6 +241,12 @@ export default class PointEdit extends Component {
     return entry;
   }
 
+  /**
+    * Статический метод для преобразования данных.
+    * Его задача - сопоставить поля формы с полями структуры и записать в них полученные значения.
+    * @param {Object} target - объект, в который будет записан результат преобразования.
+    * @return {Object} - новый объект, поля которого - это функции для преобразования значений из соответствующих полей формы и записи результата в target.
+    */
   static createMapper(target) {
     return {
       'time': (value) => (target.date = new Date(`${moment(this._date).format(`YYYY-MM-DD`)} ${value}`).getTime()),

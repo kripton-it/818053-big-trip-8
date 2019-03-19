@@ -26,13 +26,14 @@ const config = {
   },
 };
 
-// const titles = [`Taxi to Airport`, `Flight to Geneva`, `Check into hotel`, `Supper at restaurant`];
-
 const offers = [`Add luggage`, `Switch to comfort class`, `Add meal`, `Choose seats`];
 
 const descriptionSource = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. Aliquam id orci ut lectus varius viverra. Nullam nunc ex, convallis sed finibus eget, sollicitudin eget ante. Phasellus eros mauris, condimentum sed nibh vitae, sodales efficitur ipsum. Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui. Sed sed nisi sed augue convallis suscipit in sed felis. Aliquam erat volutpat. Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus.`;
 
-// генерирую один объект с данными для одной точки
+/**
+  * Функция для генерации объекта с данными для одной точки маршрута.
+  * @return {Object} объект с данными
+  */
 const generatePoint = () => {
   const type = getRandomElement([...types.keys()]);
   const name = getName(type);
@@ -54,7 +55,11 @@ const generatePoint = () => {
   };
 };
 
-// генерирую массив объектов с данными для заданного количества точек
+/**
+  * Функция для получения массива заданной длины с данными для точек маршрута.
+  * @param {number} number - число точек маршрута
+  * @return {Array} массив объектов
+  */
 export default (number) => (new Array(number)).fill(``).map(() => generatePoint());
 
 
