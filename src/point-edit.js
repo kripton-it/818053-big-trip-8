@@ -12,10 +12,12 @@ export default class PointEdit extends Component {
    *
    * @constructor
    * @param {Object} point - объект с данными точки маршрута
+   * @param {number} index - индекс
    * @this  {PointEdit}
    */
-  constructor(point) {
+  constructor(point, index) {
     super();
+    this._index = index;
     this._name = point.name;
     this._description = point.description;
     this._type = point.type.replace(point.type[0], point.type[0].toUpperCase());
@@ -79,12 +81,15 @@ export default class PointEdit extends Component {
    * @return  {string} шаблонная строка
    */
   get template() {
-    const offers = this._offers.map((offer) => `
-      <input class="point__offers-input visually-hidden" type="checkbox" id="${offer.caption}" name="offer" value="${offer.caption}">
-      <label for="${offer.caption}" class="point__offers-label">
+    const offers = this._offers.filter((offer) => offer.types.includes(this._type)).map((offer) => {
+      // const captionWithDashes = offer.caption.toLowerCase().split(` `).join(`-`);
+      return `
+      <input class="point__offers-input visually-hidden" type="checkbox" id="${offer.caption}-${this._index}" name="offer" value="${offer.caption}"${offer.isChecked ? ` checked` : ``}>
+      <label for="${offer.caption}-${this._index}" class="point__offers-label">
         <span class="point__offer-service">${offer.caption}</span> + €<span class="point__offer-price">${offer.price}</span>
       </label>
-      `).join(``);
+      `;
+    }).join(``);
 
     const images = this._photos.map((photo) => `
       <img src="${photo}" alt="picture from place" class="point__destination-image">
@@ -99,39 +104,39 @@ export default class PointEdit extends Component {
           </label>
 
           <div class="travel-way">
-            <label class="travel-way__label" for="travel-way__toggle">${types.get(this._type).icon}</label>
+            <label class="travel-way__label" for="travel-way__toggle-${this._index}">${types.get(this._type).icon}</label>
 
-            <input type="checkbox" class="travel-way__toggle visually-hidden" id="travel-way__toggle">
+            <input type="checkbox" class="travel-way__toggle visually-hidden" id="travel-way__toggle-${this._index}">
 
             <div class="travel-way__select">
               <div class="travel-way__select-group">
-                <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-taxi" name="travel-way" value="taxi">
-                <label class="travel-way__select-label" for="travel-way-taxi">🚕 taxi</label>
+                <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-taxi-${this._index}" name="travel-way" value="taxi">
+                <label class="travel-way__select-label" for="travel-way-taxi-${this._index}">🚕 taxi</label>
 
-                <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-bus" name="travel-way" value="bus">
-                <label class="travel-way__select-label" for="travel-way-bus">🚌 bus</label>
+                <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-bus-${this._index}" name="travel-way" value="bus">
+                <label class="travel-way__select-label" for="travel-way-bus-${this._index}">🚌 bus</label>
 
-                <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-train" name="travel-way" value="train">
-                <label class="travel-way__select-label" for="travel-way-train">🚂 train</label>
+                <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-train-${this._index}" name="travel-way" value="train">
+                <label class="travel-way__select-label" for="travel-way-train-${this._index}">🚂 train</label>
 
-                <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-flight" name="travel-way" value="train" checked>
-                <label class="travel-way__select-label" for="travel-way-flight">✈️ flight</label>
+                <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-flight-${this._index}" name="travel-way" value="train" checked>
+                <label class="travel-way__select-label" for="travel-way-flight-${this._index}">✈️ flight</label>
               </div>
 
               <div class="travel-way__select-group">
-                <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-check-in" name="travel-way" value="check-in">
-                <label class="travel-way__select-label" for="travel-way-check-in">🏨 check-in</label>
+                <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-check-in-${this._index}" name="travel-way" value="check-in">
+                <label class="travel-way__select-label" for="travel-way-check-in-${this._index}">🏨 check-in</label>
 
-                <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-sightseeing" name="travel-way" value="sight-seeing">
-                <label class="travel-way__select-label" for="travel-way-sightseeing">🏛 sightseeing</label>
+                <input class="travel-way__select-input visually-hidden" type="radio" id="travel-way-sightseeing-${this._index}" name="travel-way" value="sight-seeing">
+                <label class="travel-way__select-label" for="travel-way-sightseeing-${this._index}">🏛 sightseeing</label>
               </div>
             </div>
           </div>
 
           <div class="point__destination-wrap">
-            <label class="point__destination-label" for="destination">${this._type} ${types.get(this._type).preposition}</label>
-            <input class="point__destination-input" list="destination-select" id="destination" value="${this._name}" name="destination">
-            <datalist id="destination-select">
+            <label class="point__destination-label" for="destination-${this._index}">${this._type} ${types.get(this._type).preposition}</label>
+            <input class="point__destination-input" list="destination-select" id="destination-${this._index}" value="${this._name}" name="destination">
+            <datalist id="destination-select-${this._index}">
               <option value="airport"></option>
               <option value="Geneva"></option>
               <option value="Chamonix"></option>
@@ -156,8 +161,8 @@ export default class PointEdit extends Component {
           </div>
 
           <div class="paint__favorite-wrap">
-            <input type="checkbox" class="point__favorite-input visually-hidden" id="favorite" name="favorite">
-            <label class="point__favorite" for="favorite">favorite</label>
+            <input type="checkbox" class="point__favorite-input visually-hidden" id="favorite-${this._index}" name="favorite">
+            <label class="point__favorite" for="favorite-${this._index}">favorite</label>
           </div>
         </header>
 
@@ -226,7 +231,7 @@ export default class PointEdit extends Component {
       name: ``,
       type: ``,
       price: 0,
-      offers: [],
+      offers: this._offers.map((offer) => Object.assign({}, offer, {isChecked: false})),
     };
 
     const taskEditMapper = PointEdit.createMapper.call(this, entry);
@@ -252,7 +257,7 @@ export default class PointEdit extends Component {
       'time': (value) => (target.date = new Date(`${moment(this._date).format(`YYYY-MM-DD`)} ${value}`).getTime()),
       'price': (value) => (target.price = value),
       'travel-way': (value) => (target.type = value),
-      'offer': (value) => target.offers.push(value),
+      'offer': (value) => (target.offers.find((offer) => offer.caption === value).isChecked = true),
       'destination': (value) => (target.name = value),
     };
   }

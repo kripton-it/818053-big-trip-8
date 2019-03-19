@@ -35,13 +35,13 @@ tripFilterElement.insertAdjacentHTML(
  */
 const renderPoints = (points, container) => {
   const fragment = document.createDocumentFragment();
-  points.forEach((item) => {
+  points.forEach((item, index) => {
     const point = new Point(item);
     /**
      * колбэк для перехода в режим редактирования
      */
     point.onClick = () => {
-      const pointEdit = new PointEdit(item);
+      const pointEdit = new PointEdit(item, index);
       /**
        * колбэк для выхода из режима редактирования
        * @param {Object} newObject - объект, из которого обновляется информация

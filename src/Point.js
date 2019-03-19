@@ -61,7 +61,7 @@ export default class Point extends Component {
       </p>
       <p class="trip-point__price">&euro;&nbsp;${this._price}</p>
       <ul class="trip-point__offers">
-        ${this._offers.map((offer) => `<li>
+        ${this._offers.filter((offer) => (offer.isChecked && offer.types.includes(this._type))).map((offer) => `<li>
         <button class="trip-point__offer">${offer.caption} +&euro;&nbsp;${offer.price}</button>
       </li>`).join(``)}
       </ul>
