@@ -190,7 +190,7 @@ export default class PointEdit extends Component {
     const pointInput = this.element.querySelector(`input[name="time"]`);
     pointInput.style.outline = `1px solid red`;
 
-    flatpickr(pointInput, {enableTime: true, noCalendar: true, altInput: true, altFormat: `H:i`, dateFormat: `H:i`});
+    flatpickr(pointInput, {mode: `multiple`, conjunction: ` - `, enableTime: true, noCalendar: false, altInput: true, altFormat: `H:i`, dateFormat: `H:i`});
   }
 
   /**
