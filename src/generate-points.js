@@ -45,7 +45,7 @@ const generatePoint = () => {
     type,
     name,
     // дата начала (в мс)
-    date: getRandomDate(config.date.daysForward),
+    date: getRandomDate(config.date.daysForward, -10),
     // длительность (в часах)
     duration: getRandomInteger(config.durationHours.MAX, config.durationHours.MIN),
     price: config.price.regular.STEP * getRandomInteger(config.price.regular.MAX / config.price.regular.STEP, config.price.regular.MIN / config.price.regular.STEP),

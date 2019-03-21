@@ -1,11 +1,10 @@
-import {getRandomInteger} from './utils.js';
 import generatePoints from './generate-points.js';
-import getFilter from './get-filter.js';
 import Point from './point.js';
 import PointEdit from './point-edit.js';
+import Filter from './filter.js';
 
 const POINTS_NUMBER = 4;
-const filters = [
+const FILTERS = [
   {
     caption: `everything`,
     isChecked: true,
@@ -19,14 +18,56 @@ const filters = [
 ];
 const tripFilterElement = document.querySelector(`.trip-filter`);
 const tripDayElement = document.querySelector(`.trip-day__items`);
+const initialPoints = generatePoints(POINTS_NUMBER);
 
 /**
- * отрисовка фильтров
+ * функция для фильтрации массива объектов
+ * @param {Array} points - массив с данными
+ * @param {string} filterName - имя фильтра
+ * @return {Array} отфильтрованный массив
  */
-tripFilterElement.insertAdjacentHTML(
-    `beforeend`,
-    filters.map((filter) => getFilter(filter)).reduce((acc, item) => acc + item, ``)
-);
+const filterPoints = (points, filterName) => {
+  let result;
+  switch (filterName) {
+    case `filter-everything`:
+      result = points;
+      break;
+
+    case `filter-future`:
+      result = points.filter((point) => point.date > Date.now());
+      break;
+
+    case `filter-past`:
+      result = points.filter((point) => point.date < Date.now());
+      break;
+  }
+  return result;
+};
+
+/**
+ * функция для отрисовки фильтров
+ * @param {Array} filters - массив объектов с данными о фильтрах
+ * @param {Object} container - DOM-элемент, в который нужно отрисовать фильтры
+ */
+const renderFilters = (filters, container) => {
+  container.innerHTML = ``;
+  const fragment = document.createDocumentFragment();
+  filters.forEach((filter) => {
+    const filterComponent = new Filter(filter);
+    /**
+     * колбэк для клика по фильтру
+     * @param {Object} evt - объект события Event
+     */
+    filterComponent.onFilter = (evt) => {
+      const filterName = evt.target.id || evt.target.htmlFor;
+      const filteredTasks = filterPoints(initialPoints, filterName);
+      renderPoints(filteredTasks, tripDayElement);
+    };
+    filterComponent.render();
+    fragment.appendChild(filterComponent.element);
+  });
+  container.appendChild(fragment);
+};
 
 /**
  * функция для замены одного объекта с данными в массиве объектов на другой
@@ -100,16 +141,7 @@ const renderPoints = (points, container) => {
   });
   container.appendChild(fragment);
 };
-renderPoints(generatePoints(POINTS_NUMBER), tripDayElement);
 
-/**
- * обработчик кликов по фильтрам
- * @param {Object} evt - объект события Event
- */
-const tripFilterClickHandler = (evt) => {
-  evt.preventDefault();
-  tripDayElement.innerHTML = ``;
-  renderPoints(generatePoints(getRandomInteger(1, 4)), tripDayElement);
-};
-tripFilterElement.addEventListener(`click`, tripFilterClickHandler);
+renderPoints(initialPoints, tripDayElement);
+renderFilters(FILTERS, tripFilterElement);
 
