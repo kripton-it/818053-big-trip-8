@@ -27,9 +27,9 @@ export default class PointEdit extends Component {
     this._offers = point.offers;
     this._photos = point.photos;
     this._onSubmit = null;
-    this._onReset = null;
+    this._onDelete = null;
     this._onFormSubmit = this._onFormSubmit.bind(this);
-    this._onFormReset = this._onFormReset.bind(this);
+    this._onDeleteButtonClick = this._onDeleteButtonClick.bind(this);
   }
 
   /**
@@ -52,10 +52,10 @@ export default class PointEdit extends Component {
    * Метод-обработчик нажатия на кнопку Delete (reset формы).
    * @param {Object} evt - объект события Event
    */
-  _onFormReset(evt) {
+  _onDeleteButtonClick(evt) {
     evt.preventDefault();
-    if (typeof this._onReset === `function`) {
-      this._onReset();
+    if (typeof this._onDelete === `function`) {
+      this._onDelete();
     }
   }
 
@@ -71,8 +71,8 @@ export default class PointEdit extends Component {
    * Сеттер для передачи колбэка по нажатию на кнопку Delete.
    * @param {Function} fn - передаваемая функция-колбэк
    */
-  set onReset(fn) {
-    this._onReset = fn;
+  set onDelete(fn) {
+    this._onDelete = fn;
   }
 
   /**
@@ -191,7 +191,7 @@ export default class PointEdit extends Component {
     */
   _createListeners() {
     this._element.querySelector(`form`).addEventListener(`submit`, this._onFormSubmit);
-    this._element.querySelector(`form`).addEventListener(`reset`, this._onFormReset);
+    this._element.querySelector(`form .point__buttons button[type="reset"]`).addEventListener(`click`, this._onDeleteButtonClick);
     const pointInput = this.element.querySelector(`input[name="time"]`);
     pointInput.style.outline = `1px solid red`;
 
@@ -203,7 +203,7 @@ export default class PointEdit extends Component {
     */
   _removeListeners() {
     this._element.querySelector(`form`).removeEventListener(`submit`, this._onFormSubmit);
-    this._element.querySelector(`form`).removeEventListener(`reset`, this._onFormReset);
+    this._element.querySelector(`form .point__buttons button[type="reset"]`).removeEventListener(`click`, this._onDeleteButtonClick);
   }
 
   /**

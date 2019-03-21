@@ -29,49 +29,74 @@ tripFilterElement.insertAdjacentHTML(
 );
 
 /**
+ * функция для замены одного объекта с данными в массиве объектов на другой
+ * @param {Array} points - массив с данными
+ * @param {Object} pointToUpdate - объект, который надо заменить
+ * @param {Object} newPoint - новый объект
+ * @return {Object} новый объект
+ */
+const updatePoint = (points, pointToUpdate, newPoint) => {
+  const index = points.findIndex((point) => point === pointToUpdate);
+  points[index] = Object.assign({}, pointToUpdate, newPoint);
+  return points[index];
+};
+
+/**
+ * функция для удаления одного объекта с данными в массиве объектов
+ * @param {Array} points - массив с данными
+ * @param {Object} pointToDelete - объект, который надо удалить
+ * @return {Array} массив с удалённым объектом
+ */
+const deletePoint = (points, pointToDelete) => {
+  const index = points.findIndex((point) => point === pointToDelete);
+  points.splice(index, 1);
+  return points;
+};
+
+/**
  * функция для отрисовки массива точек маршрута
  * @param {Array} points - массив с данными
  * @param {Object} container - DOM-элемент, в который нужно отрисовать точки маршрута
  */
 const renderPoints = (points, container) => {
+  container.innerHTML = ``;
   const fragment = document.createDocumentFragment();
-  points.forEach((item, index) => {
-    const point = new Point(item);
+  points.forEach((point, index) => {
+    const pointComponent = new Point(point);
     /**
      * колбэк для перехода в режим редактирования
      */
-    point.onClick = () => {
-      const pointEdit = new PointEdit(item, index);
+    pointComponent.onClick = () => {
+      const pointEditComponent = new PointEdit(point, index);
+      /**
+       * колбэк для нажатия на кнопку Delete
+       */
+      const onDelete = () => {
+        deletePoint(points, point);
+        container.removeChild(pointEditComponent.element);
+        pointEditComponent.unrender();
+      };
+
       /**
        * колбэк для выхода из режима редактирования
-       * @param {Object} newObject - объект, из которого обновляется информация
+       * @param {Object} newPoint - объект, из которого обновляется информация
        */
-      pointEdit.onSubmit = (newObject) => {
-        item.name = newObject.name;
-        item.type = newObject.type;
-        item.date = newObject.date;
-        item.price = newObject.price;
-        item.offers = newObject.offers;
+      const onSubmit = (newPoint) => {
+        const updatedPoint = updatePoint(points, point, newPoint);
 
-        point.update(item);
-        point.render();
-        container.replaceChild(point.element, pointEdit.element);
-        pointEdit.unrender();
+        pointComponent.update(updatedPoint);
+        pointComponent.render();
+        container.replaceChild(pointComponent.element, pointEditComponent.element);
+        pointEditComponent.unrender();
       };
-      /**
-       * колбэк для нажатия на кнопку Delete (reset формы)
-       */
-      pointEdit.onReset = () => {
-        point.render();
-        container.replaceChild(point.element, pointEdit.element);
-        pointEdit.unrender();
-      };
-      pointEdit.render();
-      container.replaceChild(pointEdit.element, point.element);
-      point.unrender();
+      pointEditComponent.onSubmit = onSubmit;
+      pointEditComponent.onDelete = onDelete;
+      pointEditComponent.render();
+      container.replaceChild(pointEditComponent.element, pointComponent.element);
+      pointComponent.unrender();
     };
-    point.render();
-    fragment.appendChild(point.element);
+    pointComponent.render();
+    fragment.appendChild(pointComponent.element);
   });
   container.appendChild(fragment);
 };
