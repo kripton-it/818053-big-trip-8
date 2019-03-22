@@ -20,7 +20,7 @@
         <h1 class="trip__points">Amsterdam&nbsp;&mdash; Geneva&nbsp;&mdash;  Chamonix</h1>
         <p class="trip__dates">Mar 17&nbsp;&mdash; 19</p>
       </div>
-      <p class="trip__total">Total: <span class="trip__total-cost">&euro;&nbsp;1500</span></p>
+      <p class="trip__total">Total: <span class="trip__total-cost">0</span></p>
     </section>
 
     <section class="trip-controls">
@@ -65,6 +65,21 @@
     </section>
   </section>
 </main>
+
+<section class="statistic content-wrap visually-hidden" id="stats">
+  <div class="statistic__item statistic__item--money">
+    <canvas class="statistic__money" width="900"></canvas>
+  </div>
+
+  <div class="statistic__item statistic__item--transport">
+    <canvas class="statistic__transport" width="900"></canvas>
+  </div>
+
+  <div class="statistic__item statistic__item--time-spend">
+    <canvas class="statistic__time-spend" width="900"></canvas>
+  </div>
+</section>
+
 
 <script src="bundle.js"></script>
 
