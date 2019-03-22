@@ -1,7 +1,9 @@
+import {types} from './utils.js';
 import generatePoints from './generate-points.js';
 import Point from './point.js';
 import PointEdit from './point-edit.js';
 import Filter from './filter.js';
+import {getDataForChart, renderChart} from './stat.js';
 
 const POINTS_NUMBER = 4;
 const FILTERS = [
@@ -19,6 +21,24 @@ const FILTERS = [
 const tripFilterElement = document.querySelector(`.trip-filter`);
 const tripDayElement = document.querySelector(`.trip-day__items`);
 const initialPoints = generatePoints(POINTS_NUMBER);
+const totalCostElement = document.querySelector(`.trip__total-cost`);
+const money = getDataForChart(initialPoints).sort((first, second) => second.total - first.total);
+const transport = getDataForChart(initialPoints).filter((it) => types.get(it.type).category === `transport`).sort((first, second) => second.count - first.count);
+const moneyConfig = {
+  target: document.querySelector(`.statistic__money`),
+  type: `money`,
+  labels: money.map((it) => `${types.get(it.type).icon} ${it.type.toUpperCase()}`),
+  dataSet: money.map((it) => it.total),
+  prefix: `€ `
+};
+const transportConfig = {
+  target: document.querySelector(`.statistic__transport`),
+  type: `transport`,
+  labels: transport.map((it) => `${types.get(it.type).icon} ${it.type.toUpperCase()}`),
+  dataSet: transport.map((it) => it.count),
+  prefix: `x`
+};
+let totalPrice = 0;
 
 /**
  * функция для фильтрации массива объектов
@@ -74,12 +94,10 @@ const renderFilters = (filters, container) => {
  * @param {Array} points - массив с данными
  * @param {Object} pointToUpdate - объект, который надо заменить
  * @param {Object} newPoint - новый объект
- * @return {Object} новый объект
  */
 const updatePoint = (points, pointToUpdate, newPoint) => {
   const index = points.findIndex((point) => point === pointToUpdate);
   points[index] = Object.assign({}, pointToUpdate, newPoint);
-  return points[index];
 };
 
 /**
@@ -95,6 +113,15 @@ const deletePoint = (points, pointToDelete) => {
 };
 
 /**
+ * функция для записи суммарной цены
+ * @param {number} price - цена
+ * @param {Object} container - элемент, в который надо записать цену
+ */
+const setTotalPrice = (price, container) => {
+  container.innerHTML = `&euro;&nbsp;${price}`;
+};
+
+/**
  * функция для отрисовки массива точек маршрута
  * @param {Array} points - массив с данными
  * @param {Object} container - DOM-элемент, в который нужно отрисовать точки маршрута
@@ -102,6 +129,7 @@ const deletePoint = (points, pointToDelete) => {
 const renderPoints = (points, container) => {
   container.innerHTML = ``;
   const fragment = document.createDocumentFragment();
+
   points.forEach((point, index) => {
     const pointComponent = new Point(point);
     /**
@@ -109,6 +137,21 @@ const renderPoints = (points, container) => {
      */
     pointComponent.onClick = () => {
       const pointEditComponent = new PointEdit(point, index);
+      /**
+       * колбэк для выбора/отмены оффера
+       * @param {Object} evt - объект события Event
+       */
+      const onOffer = (evt) => {
+        const offerIndex = point.offers.findIndex((it) => it.caption === evt.target.value);
+        const currentOffer = point.offers[offerIndex];
+        currentOffer.isChecked = evt.target.checked;
+        pointEditComponent.updatePrice();
+        const currentPrice = currentOffer.price;
+        const totalPriceDifference = evt.target.checked ? currentPrice : -currentPrice;
+        totalPrice += totalPriceDifference;
+        setTotalPrice(totalPrice, totalCostElement);
+      };
+
       /**
        * колбэк для нажатия на кнопку Delete
        */
@@ -123,25 +166,27 @@ const renderPoints = (points, container) => {
        * @param {Object} newPoint - объект, из которого обновляется информация
        */
       const onSubmit = (newPoint) => {
-        const updatedPoint = updatePoint(points, point, newPoint);
-
-        pointComponent.update(updatedPoint);
+        updatePoint(points, point, newPoint);
         pointComponent.render();
         container.replaceChild(pointComponent.element, pointEditComponent.element);
         pointEditComponent.unrender();
       };
       pointEditComponent.onSubmit = onSubmit;
       pointEditComponent.onDelete = onDelete;
+      pointEditComponent.onOffer = onOffer;
       pointEditComponent.render();
       container.replaceChild(pointEditComponent.element, pointComponent.element);
       pointComponent.unrender();
     };
     pointComponent.render();
+    totalPrice += pointComponent.price;
     fragment.appendChild(pointComponent.element);
   });
   container.appendChild(fragment);
+  setTotalPrice(totalPrice, totalCostElement);
 };
 
 renderPoints(initialPoints, tripDayElement);
 renderFilters(FILTERS, tripFilterElement);
-
+renderChart(moneyConfig);
+renderChart(transportConfig);

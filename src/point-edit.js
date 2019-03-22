@@ -28,8 +28,11 @@ export default class PointEdit extends Component {
     this._photos = point.photos;
     this._onSubmit = null;
     this._onDelete = null;
+    this._onOffer = null;
     this._onFormSubmit = this._onFormSubmit.bind(this);
     this._onDeleteButtonClick = this._onDeleteButtonClick.bind(this);
+    this._onOfferChange = this._onOfferChange.bind(this);
+    this.updatePrice = this.updatePrice.bind(this);
   }
 
   /**
@@ -49,7 +52,7 @@ export default class PointEdit extends Component {
   }
 
   /**
-   * Метод-обработчик нажатия на кнопку Delete (reset формы).
+   * Метод-обработчик нажатия на кнопку Delete.
    * @param {Object} evt - объект события Event
    */
   _onDeleteButtonClick(evt) {
@@ -57,6 +60,28 @@ export default class PointEdit extends Component {
     if (typeof this._onDelete === `function`) {
       this._onDelete();
     }
+  }
+
+  /**
+   * Метод-обработчик для выбора/отмены оффера.
+   * @param {Object} evt - объект события Event
+   */
+  _onOfferChange(evt) {
+    evt.preventDefault();
+    // const formData = new FormData(this._element.querySelector(`form`));
+    // const newData = this._processForm(formData);
+    if (typeof this._onOffer === `function`) {
+      this._onOffer(evt);
+    }
+    // this.update(newData);
+  }
+
+  /**
+   * Сеттер для передачи колбэка для выбора/отмены оффера.
+   * @param {Function} fn - передаваемая функция-колбэк
+   */
+  set onOffer(fn) {
+    this._onOffer = fn;
   }
 
   /**
@@ -82,7 +107,6 @@ export default class PointEdit extends Component {
    */
   get template() {
     const offers = this._offers.filter((offer) => offer.types.includes(this._type)).map((offer) => {
-      // const captionWithDashes = offer.caption.toLowerCase().split(` `).join(`-`);
       return `
       <input class="point__offers-input visually-hidden" type="checkbox" id="${offer.caption}-${this._index}" name="offer" value="${offer.caption}"${offer.isChecked ? ` checked` : ``}>
       <label for="${offer.caption}-${this._index}" class="point__offers-label">
@@ -152,7 +176,7 @@ export default class PointEdit extends Component {
           <label class="point__price">
             write price
             <span class="point__price-currency">€</span>
-            <input class="point__input" type="text" value="${this._price}" name="price">
+            <input class="point__input" type="text" value="${this.price}" name="price">
           </label>
 
           <div class="point__buttons">
@@ -187,14 +211,29 @@ export default class PointEdit extends Component {
   }
 
   /**
+   * Геттер для получения полной цены точки с учётом доп. офферов.
+   *
+   * @return {number} полная цена
+   */
+  get price() {
+    const offerTotalPrice = this._offers.filter((offer) => (offer.isChecked && offer.types.includes(this._type))).reduce((acc, offer) => acc + offer.price, 0);
+    return this._price + offerTotalPrice;
+  }
+
+  updatePrice() {
+    this._element.querySelector(`.point__input[name="price"]`).value = this.price;
+  }
+
+  /**
     * Метод для навешивания обработчиков.
     */
   _createListeners() {
     this._element.querySelector(`form`).addEventListener(`submit`, this._onFormSubmit);
     this._element.querySelector(`form .point__buttons button[type="reset"]`).addEventListener(`click`, this._onDeleteButtonClick);
-    const pointInput = this.element.querySelector(`input[name="time"]`);
-    pointInput.style.outline = `1px solid red`;
+    this._element.querySelector(`.point__offers-wrap`).addEventListener(`change`, this._onOfferChange);
 
+    const pointInput = this.element.querySelector(`input[name="time"]`);
+    // pointInput.style.outline = `1px solid red`;
     flatpickr(pointInput, {mode: `multiple`, conjunction: ` - `, enableTime: true, noCalendar: false, altInput: true, altFormat: `H:i`, dateFormat: `H:i`});
   }
 
@@ -204,6 +243,7 @@ export default class PointEdit extends Component {
   _removeListeners() {
     this._element.querySelector(`form`).removeEventListener(`submit`, this._onFormSubmit);
     this._element.querySelector(`form .point__buttons button[type="reset"]`).removeEventListener(`click`, this._onDeleteButtonClick);
+    this._element.querySelector(`.point__offers-wrap`).removeEventListener(`change`, this._onOfferChange);
   }
 
   /**
@@ -242,7 +282,6 @@ export default class PointEdit extends Component {
         taskEditMapper[property](value);
       }
     }
-
     return entry;
   }
 
@@ -255,10 +294,16 @@ export default class PointEdit extends Component {
   static createMapper(target) {
     return {
       'time': (value) => (target.date = new Date(`${moment(this._date).format(`YYYY-MM-DD`)} ${value}`).getTime()),
-      'price': (value) => (target.price = value),
+      'price': (value) => {
+        target.price = +value;
+      },
       'travel-way': (value) => (target.type = value),
-      'offer': (value) => (target.offers.find((offer) => offer.caption === value).isChecked = true),
-      'destination': (value) => (target.name = value),
+      'offer': (value) => {
+        target.offers.find((offer) => offer.caption === value).isChecked = true;
+      },
+      'destination': (value) => {
+        target.name = value;
+      },
     };
   }
 }
