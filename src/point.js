@@ -59,13 +59,23 @@ export default class Point extends Component {
         <span class="trip-point__timetable">${moment(this._date).format(`HH:mm`)}</span>
         <span class="trip-point__duration">${this._duration}h 00m</span>
       </p>
-      <p class="trip-point__price">&euro;&nbsp;${this._price}</p>
+      <p class="trip-point__price">&euro;&nbsp;${this.price}</p>
       <ul class="trip-point__offers">
         ${this._offers.filter((offer) => (offer.isChecked && offer.types.includes(this._type))).map((offer) => `<li>
         <button class="trip-point__offer">${offer.caption} +&euro;&nbsp;${offer.price}</button>
       </li>`).join(``)}
       </ul>
     </article>`;
+  }
+
+  /**
+   * Геттер для получения полной цены точки с учётом доп. офферов.
+   *
+   * @return {number} полная цена
+   */
+  get price() {
+    const offerTotalPrice = this._offers.filter((offer) => (offer.isChecked && offer.types.includes(this._type))).reduce((acc, offer) => acc + offer.price, 0);
+    return this._price + offerTotalPrice;
   }
 
   /**

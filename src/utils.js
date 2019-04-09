@@ -16,42 +16,52 @@ const types = new Map([
   [`Taxi`, {
     icon: `🚕`,
     preposition: `to`,
+    category: `transport`,
   }],
   [`Bus`, {
     icon: `🚌`,
     preposition: `to`,
+    category: `transport`,
   }],
   [`Train`, {
     icon: `🚂`,
     preposition: `to`,
+    category: `transport`,
   }],
   [`Ship`, {
     icon: `🛳️`,
     preposition: `to`,
+    category: `transport`,
   }],
   [`Transport`, {
     icon: `🚊`,
     preposition: `to`,
+    category: `transport`,
   }],
   [`Drive`, {
     icon: `🚗`,
     preposition: `to`,
+    category: `transport`,
   }],
   [`Flight`, {
     icon: `✈️`,
     preposition: `to`,
+    category: `transport`,
   }],
   [`Check-in`, {
     icon: `🏨`,
     preposition: `at the`,
+    category: `hotel`,
   }],
   [`Sightseeing`, {
     icon: `🏛️`,
     preposition: `in`,
+    category: `hotel`,
   }],
-  [`Restaurant `, {
+  [`Restaurant`, {
     icon: `🍴`,
     preposition: `in`,
+    category: `hotel`,
   }],
 ]);
 
