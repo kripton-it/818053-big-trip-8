@@ -13,83 +13,31 @@ const Unit = {
   * Сопоставление типа точки с иконкой и предлогом.
   */
 const types = new Map([
-  [`Taxi`, {
+  [`taxi`, {
     icon: `🚕`,
     preposition: `to`,
-    category: `transport`,
   }],
-  [`Bus`, {
+  [`bus`, {
     icon: `🚌`,
     preposition: `to`,
-    category: `transport`,
   }],
-  [`Train`, {
+  [`train`, {
     icon: `🚂`,
     preposition: `to`,
-    category: `transport`,
   }],
-  [`Ship`, {
-    icon: `🛳️`,
-    preposition: `to`,
-    category: `transport`,
-  }],
-  [`Transport`, {
-    icon: `🚊`,
-    preposition: `to`,
-    category: `transport`,
-  }],
-  [`Drive`, {
-    icon: `🚗`,
-    preposition: `to`,
-    category: `transport`,
-  }],
-  [`Flight`, {
+  [`flight`, {
     icon: `✈️`,
     preposition: `to`,
-    category: `transport`,
   }],
-  [`Check-in`, {
+  [`check-in`, {
     icon: `🏨`,
     preposition: `at the`,
-    category: `hotel`,
   }],
-  [`Sightseeing`, {
+  [`sightseeing`, {
     icon: `🏛️`,
     preposition: `in`,
-    category: `hotel`,
-  }],
-  [`Restaurant`, {
-    icon: `🍴`,
-    preposition: `in`,
-    category: `hotel`,
   }],
 ]);
-
-/**
-  * Список городов.
-  */
-const cities = [`Amsterdam`, `Geneva`, `Chamonix`, `Helsinki`, `Tokyo`, `Sydney`];
-
-/**
-  * Список мест.
-  */
-const places = [`airport`, `station`, `hotel`, `restaurant`, `museum`];
-
-/**
-  * Функция для подбора подходящего по смыслу названия точки в зависимости от типа точки.
-  * @param  {string} type - тип точки.
-  * @return {string} подходящее название
-  */
-const getName = (type) => {
-  switch (type) {
-    case `Taxi`:
-      return getRandomElement(places);
-    case `Check-in`:
-      return `hotel`;
-    default:
-      return getRandomElement(cities);
-  }
-};
 
 /**
  * Генерирует случайное целое число [min; max]
@@ -152,4 +100,22 @@ const getMixedSubarray = (array, max = array.length, min = 0) => getMixedArray(a
  */
 const getRandomDate = (daysTo, daysFrom = 1) => Date.now() + getRandomInteger(daysTo * Unit.day * (Unit.hour - 1), daysFrom * Unit.day * (Unit.hour - 1)) * Unit.minute * Unit.second;
 
-export {types, getName, getRandomInteger, getRandomElement, getMixedSubarray, getRandomDate};
+const getDuration = (interval) => {
+  const seconds = Math.floor(interval / 1000);
+  const totalMinutes = Math.floor(seconds / 60);
+  if (totalMinutes < 60) {
+    return `${totalMinutes < 10 ? `0${totalMinutes}` : totalMinutes}M`;
+  }
+  const totalhours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (totalhours < 24) {
+    return `${totalhours < 10 ? `0${totalhours}` : totalhours}H ${minutes < 10 ? `0${minutes}` : minutes}M`;
+  }
+  const hours = totalhours % 24;
+  const days = Math.floor(totalhours / 24);
+  return `${days < 10 ? `0${days}` : days}D ${hours < 10 ? `0${hours}` : hours}H ${minutes < 10 ? `0${minutes}` : minutes}M`;
+};
+
+const capitalize = (word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`;
+
+export {types, getDuration, capitalize, getRandomInteger, getRandomElement, getMixedSubarray, getRandomDate};
