@@ -1,4 +1,4 @@
-import {types} from './utils.js';
+import {types, getDuration, capitalize} from './utils.js';
 import Component from './component.js';
 import moment from 'moment';
 
@@ -15,14 +15,13 @@ export default class Point extends Component {
    */
   constructor(point) {
     super();
+    this._id = point.id;
     this._name = point.name;
-    this._description = point.description;
-    this._type = point.type.replace(point.type[0], point.type[0].toUpperCase());
-    this._date = point.date;
-    this._duration = point.duration;
-    this._price = point.price;
+    this._type = point.type;
+    this._dateFrom = point.dateFrom;
+    this._dateTo = point.dateTo;
+    this._basePrice = point.basePrice;
     this._offers = point.offers;
-    this._photos = point.photos;
     this._onClick = null;
     this._onPointClick = this._onPointClick.bind(this);
   }
@@ -52,19 +51,21 @@ export default class Point extends Component {
    * @return {string} шаблонная строка
    */
   get template() {
+    const duration = getDuration(this._dateTo - this._dateFrom);
+    const offersList = `<ul class="trip-point__offers">
+        ${this._offers.slice(0, 3).map((offer) => `<li>
+        <button class="trip-point__offer">${offer.title} +&euro;&nbsp;${offer.price}</button>
+      </li>`).join(``)}
+      </ul>`;
     return `<article class="trip-point">
       <i class="trip-icon">${types.get(this._type).icon}</i>
-      <h3 class="trip-point__title">${`${this._type} ${types.get(this._type).preposition} ${this._name}`}</h3>
+      <h3 class="trip-point__title">${`${capitalize(this._type)} ${types.get(this._type).preposition} ${this._name}`}</h3>
       <p class="trip-point__schedule">
-        <span class="trip-point__timetable">${moment(this._date).format(`HH:mm`)}</span>
-        <span class="trip-point__duration">${this._duration}h 00m</span>
+        <span class="trip-point__timetable">${moment(this._dateFrom).format(`HH:mm`)} - ${moment(this._dateTo).format(`HH:mm`)}</span>
+        <span class="trip-point__duration">${duration}</span>
       </p>
-      <p class="trip-point__price">&euro;&nbsp;${this.price}</p>
-      <ul class="trip-point__offers">
-        ${this._offers.filter((offer) => (offer.isChecked && offer.types.includes(this._type))).map((offer) => `<li>
-        <button class="trip-point__offer">${offer.caption} +&euro;&nbsp;${offer.price}</button>
-      </li>`).join(``)}
-      </ul>
+      <p class="trip-point__price">&euro;&nbsp;${this._basePrice}</p>
+      ${offersList}
     </article>`;
   }
 
@@ -74,8 +75,8 @@ export default class Point extends Component {
    * @return {number} полная цена
    */
   get price() {
-    const offerTotalPrice = this._offers.filter((offer) => (offer.isChecked && offer.types.includes(this._type))).reduce((acc, offer) => acc + offer.price, 0);
-    return this._price + offerTotalPrice;
+    const offerTotalPrice = this._offers.filter((offer) => (offer.accepted)).reduce((acc, offer) => acc + offer.price, 0);
+    return this._basePrice + offerTotalPrice;
   }
 
   /**
@@ -98,13 +99,10 @@ export default class Point extends Component {
     */
   update(point) {
     this._name = point.name;
-    this._description = point.description;
-    this._type = point.type.replace(point.type[0], point.type[0].toUpperCase());
-    this._date = point.date;
-    this._duration = point.duration;
-    this._price = point.price;
+    this._type = point.type;
+    this._dateFrom = point.dateFrom;
+    this._dateTo = point.dateTo;
+    this._basePrice = point.basePrice;
     this._offers = point.offers;
-    this._photos = point.photos;
   }
 }
-

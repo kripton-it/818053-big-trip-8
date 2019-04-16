@@ -2,154 +2,70 @@
   * Вспомогательные переменные и функции.
   */
 
-const Unit = {
-  day: 24,
-  hour: 60,
-  minute: 60,
-  second: 1000
-};
-
 /**
   * Сопоставление типа точки с иконкой и предлогом.
   */
 const types = new Map([
-  [`Taxi`, {
+  [`taxi`, {
     icon: `🚕`,
     preposition: `to`,
-    category: `transport`,
+    category: `transport`
   }],
-  [`Bus`, {
+  [`bus`, {
     icon: `🚌`,
     preposition: `to`,
-    category: `transport`,
+    category: `transport`
   }],
-  [`Train`, {
+  [`train`, {
     icon: `🚂`,
     preposition: `to`,
-    category: `transport`,
+    category: `transport`
   }],
-  [`Ship`, {
-    icon: `🛳️`,
-    preposition: `to`,
-    category: `transport`,
-  }],
-  [`Transport`, {
-    icon: `🚊`,
-    preposition: `to`,
-    category: `transport`,
-  }],
-  [`Drive`, {
-    icon: `🚗`,
-    preposition: `to`,
-    category: `transport`,
-  }],
-  [`Flight`, {
+  [`flight`, {
     icon: `✈️`,
     preposition: `to`,
-    category: `transport`,
+    category: `transport`
   }],
-  [`Check-in`, {
+  [`check-in`, {
     icon: `🏨`,
     preposition: `at the`,
-    category: `hotel`,
+    category: `place`
   }],
-  [`Sightseeing`, {
+  [`sightseeing`, {
     icon: `🏛️`,
     preposition: `in`,
-    category: `hotel`,
-  }],
-  [`Restaurant`, {
-    icon: `🍴`,
-    preposition: `in`,
-    category: `hotel`,
+    category: `place`
   }],
 ]);
 
 /**
-  * Список городов.
-  */
-const cities = [`Amsterdam`, `Geneva`, `Chamonix`, `Helsinki`, `Tokyo`, `Sydney`];
-
-/**
-  * Список мест.
-  */
-const places = [`airport`, `station`, `hotel`, `restaurant`, `museum`];
-
-/**
-  * Функция для подбора подходящего по смыслу названия точки в зависимости от типа точки.
-  * @param  {string} type - тип точки.
-  * @return {string} подходящее название
-  */
-const getName = (type) => {
-  switch (type) {
-    case `Taxi`:
-      return getRandomElement(places);
-    case `Check-in`:
-      return `hotel`;
-    default:
-      return getRandomElement(cities);
+ * Форматирование длительности точки.
+ *
+ * @param  {Array} interval - время в мс.
+ * @return {string} форматированная строка.
+ */
+const getDuration = (interval) => {
+  const seconds = Math.floor(interval / 1000);
+  const totalMinutes = Math.floor(seconds / 60);
+  if (totalMinutes < 60) {
+    return `${totalMinutes < 10 ? `0${totalMinutes}` : totalMinutes}M`;
   }
+  const totalhours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (totalhours < 24) {
+    return `${totalhours < 10 ? `0${totalhours}` : totalhours}H ${minutes < 10 ? `0${minutes}` : minutes}M`;
+  }
+  const hours = totalhours % 24;
+  const days = Math.floor(totalhours / 24);
+  return `${days < 10 ? `0${days}` : days}D ${hours < 10 ? `0${hours}` : hours}H ${minutes < 10 ? `0${minutes}` : minutes}M`;
 };
 
 /**
- * Генерирует случайное целое число [min; max]
+ * Функция, возвращающая слово с заглавной буквы.
  *
- * @param  {number} max - Верхняя граница.
- * @param  {number} min - Нижняя граница.
- * @return {number} случайное целое число [min; max].
+ * @param  {string} word - слово.
+ * @return {string} слово с большой буквы.
  */
-const getRandomInteger = (max, min = 0) => Math.floor(min + Math.random() * (max - min + 1));
+const capitalize = (word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`;
 
-/**
- * Возвращает случайный индекс для заданного массива.
- *
- * @param  {Array} array - массив.
- * @return {number} случайный индекс.
- */
-const getRandomArrayIndex = (array) => getRandomInteger(array.length - 1);
-
-/**
- * Возвращает случайный элемент массива.
- *
- * @param  {Array} array - массив.
- * @return {any} случайный элемент.
- */
-const getRandomElement = (array) => array[getRandomArrayIndex(array)];
-
-/**
- * Возвращает перемешанный массив.
- *
- * @param  {Array} array - массив.
- * @return {Array} перемешанный массив.
- */
-const getMixedArray = (array) => {
-  const originalArray = array.slice(0);
-  const mixedArray = [];
-  for (let i = 0; i < array.length; i++) {
-    const randomIndex = getRandomArrayIndex(originalArray);
-    mixedArray.push(originalArray[randomIndex]);
-    originalArray.splice(randomIndex, 1);
-  }
-  return mixedArray;
-};
-
-/**
- * Возвращает перемешанный массив случайной длины [min; max].
- *
- * @param  {Array} array - массив.
- * @param  {number} max - максимальная длина возвращаемого массива.
- * @param  {number} min - минимальная длина возвращаемого массива.
- * @return {Array} перемешанный массив.
- */
-const getMixedSubarray = (array, max = array.length, min = 0) => getMixedArray(array).slice(0, getRandomInteger(max, min));
-
-/**
- * Возвращает случайную дату в диапазоне [текущая дата + daysFrom дней; текущая дата + daysTo дней] с точностью до минуты (в мс)
- *
- * @param  {number} daysTo - число недель.
- * @param  {number} daysFrom - число недель.
- * @return {timestamp} дата в формате timestamp.
- */
-const getRandomDate = (daysTo, daysFrom = 1) => Date.now() + getRandomInteger(daysTo * Unit.day * (Unit.hour - 1), daysFrom * Unit.day * (Unit.hour - 1)) * Unit.minute * Unit.second;
-
-export {types, getName, getRandomInteger, getRandomElement, getMixedSubarray, getRandomDate};
+export {types, getDuration, capitalize};
