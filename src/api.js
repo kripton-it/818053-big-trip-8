@@ -7,6 +7,11 @@ const Method = {
   DELETE: `DELETE`
 };
 
+/**
+ * функция для проверки статуса ответа
+ * @param {Object} response - объект, полученный с сервера
+ * @return {Object} response
+ */
 const checkStatus = (response) => {
   if (response.status >= 200 && response.status < 300) {
     return response;
@@ -15,6 +20,11 @@ const checkStatus = (response) => {
   }
 };
 
+/**
+ * функция для конвертации ответа сервера в JSON формат
+ * @param {Object} response - объект, полученный с сервера
+ * @return {Object} конвертированный в JSON формат объект
+ */
 const toJSON = (response) => {
   return response.json();
 };
@@ -38,7 +48,7 @@ export default class API {
 
   /**
    * Метод для получения точек с сервера.
-   * @return {Array} - массив объектов // ** класса ModelTask ** //.
+   * @return {Array} - массив объектов класса PointAdapter
    */
   getPoints() {
     return this._load({url: `points`}).then(toJSON).then(PointAdapter.parsePoints);
@@ -46,41 +56,37 @@ export default class API {
 
   /**
    * Метод для получения направлений с сервера.
-   * @return {Array} - массив объектов // ** класса ModelTask ** //.
+   * @return {Array} - массив объектов
    */
   getDestinations() {
-    // return this._load({url: `points`}).then(toJSON).then(ModelTask.parseTasks);
     return this._load({url: `destinations`}).then(toJSON);
   }
 
   /**
    * Метод для получения предложений с сервера.
-   * @return {Array} - массив объектов // ** класса ModelTask ** //.
+   * @return {Array} - массив объектов
    */
   getOffers() {
-    // return this._load({url: `points`}).then(toJSON).then(ModelTask.parseTasks);
     return this._load({url: `offers`}).then(toJSON);
   }
 
   /**
-   * Метод для записи нового таска на сервер.
-   * @param {object} - таск.
-   * @return {Array} - объект класса ModelTask.
+   * Метод для записи новой точки на сервер.
+   * @param {object} - объект с данными.
+   * @return {PointAdapter} - объект класса PointAdapter.
    */
-  createTask({task}) {
+  createPoint({data}) {
     return this._load({
-      url: `tasks`,
+      url: `points`,
       method: Method.POST,
-      body: JSON.stringify(task),
+      body: JSON.stringify(data),
       headers: new Headers({'Content-Type': `application/json`})
-    // }).then(toJSON).then(ModelTask.parseTask);
-    }).then(toJSON);
+    }).then(toJSON).then(PointAdapter.parsePoint);
   }
 
   /**
    * Метод для обновления точки на сервер.
-   * @param {number} id - идентификатор.
-   * @param {object} - точка.
+   * @param {object} - объект с данными.
    * @return {PointAdapter} - объект класса PointAdapter.
    */
   updatePoint({id, data}) {
@@ -94,7 +100,7 @@ export default class API {
 
   /**
    * Метод для удаления точки на сервере.
-   * @param {number} id - идентификатор.
+   * @param {object} - объект с данными.
    * @return {Promise}.
    */
   deletePoint({id}) {
@@ -102,7 +108,7 @@ export default class API {
   }
 
   /**
-   * Метод для обращения к серверу.
+   * Универсальный метод для обращения к серверу.
    * @param {Object} объект с параметрами.
    * @return {Promise}.
    */
@@ -110,10 +116,10 @@ export default class API {
     headers.append(`Authorization`, this._authorization);
 
     return fetch(`${this._endPoint}/${url}`, {method, body, headers})
-      .then(checkStatus)
-      .catch((err) => {
-        // console.error(`fetch error: ${err}`);
-        throw err;
-      });
+    .then(checkStatus)
+    .catch((err) => {
+      window.console.error(`fetch error: ${err}`);
+      throw err;
+    });
   }
 }

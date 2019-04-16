@@ -10,36 +10,36 @@ export default class PointAdapter {
    * @this {ModelTask}
    */
   constructor(point) {
-    this.id = point.id;
-    this.type = point.type;
+    this.id = point.id || null;
+    this.type = point.type || ``;
     this.dateFrom = Math.floor(point[`date_from`] / 60000) * 60000 || null;
     this.dateTo = Math.floor(point[`date_to`] / 60000) * 60000 || null;
-    this.basePrice = point[`base_price`];
-    this.isFavorite = Boolean(point[`is_favorite`]);
-    this.offers = point.offers;
-    this.name = point.destination.name;
-    this.description = point.destination.description;
-    this.photos = point.destination.pictures;
+    this.basePrice = point[`base_price`] || 0;
+    this.isFavorite = Boolean(point[`is_favorite`]) || false;
+    this.offers = point.offers || [];
+    this.name = point.destination.name || ``;
+    this.description = point.destination.description || ``;
+    this.photos = point.destination.pictures || [];
   }
 
   /**
-   * Метод для преобразования в формат, понятный серверу.
+   * Статический метод для преобразования в формат, понятный серверу.
+   * @param {Object} point - объект, который нужно преобразовать
    * @return {object} - преобразованный объект
    */
-  toRAW() {
-    console.log(`toRAW`);
-    const name = this.name;
-    const description = this.description;
-    const pictures = this.photos;
+  static toRAW(point) {
+    const name = point.destination.name;
+    const description = point.destination.description;
+    const pictures = point.destination.photos;
     return {
-      'id': this.id,
-      'type': this.type,
-      'date_from': this.dateFrom,
-      'date_to': this.dateTo,
+      'id': point.id || null,
+      'type': point.type,
+      'date_from': point.dateFrom,
+      'date_to': point.dateTo,
       'destination': {name, description, pictures},
-      'base_price': this.basePrice,
-      'is_favorite': this.isFavorite,
-      'offers': this.offers,
+      'base_price': point.price,
+      'is_favorite': point.isFavorite,
+      'offers': point.offers,
     };
   }
 
