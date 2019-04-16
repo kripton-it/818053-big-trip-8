@@ -3,6 +3,8 @@ import Component from './component.js';
 import flatpickr from 'flatpickr';
 import moment from 'moment';
 
+const ESC_KEYCODE = 27;
+
 /**
   * Класс точки маршрута в режиме редактирования.
   */
@@ -17,15 +19,16 @@ export default class PointEdit extends Component {
    */
   constructor(point) {
     super();
-    this._id = point.id;
-    this._name = point.name;
-    this._description = point.description;
-    this._type = point.type;
-    this._dateFrom = point.dateFrom;
-    this._dateTo = point.dateTo;
-    this._basePrice = point.basePrice;
-    this._offers = point.offers;
-    this._photos = point.photos;
+    this._id = point.id || ``;
+    this._name = point.name || ``;
+    this._description = point.description || ``;
+    this._type = point.type || `taxi`;
+    this._dateFrom = new Date(point.dateFrom);
+    this._dateTo = new Date(point.dateTo);
+    this._basePrice = point.basePrice || 0;
+    this._offers = point.offers || [];
+    this._photos = point.photos || [];
+    this._isFavorite = point.isFavorite;
     this._availableDestinations = [];
     this._availableOffers = [];
     this._onSubmit = null;
@@ -38,60 +41,16 @@ export default class PointEdit extends Component {
     this._onTypeChange = this._onTypeChange.bind(this);
     this._onDestination = null;
     this._onDestinationChange = this._onDestinationChange.bind(this);
-    this.updatePrice = this.updatePrice.bind(this);
+    this._onEsc = null;
+    this._onEscPress = this._onEscPress.bind(this);
   }
 
   /**
-   * Метод-обработчик нажатия на кнопку Save.
-   * @param {Object} evt - объект события Event
+   * Сеттер для передачи колбэка при нажатии на Esc.
+   * @param {Function} fn - передаваемая функция-колбэк
    */
-  _onFormSubmit(evt) {
-    evt.preventDefault();
-    this._element.querySelector(`.point__total-price`).value = this.price;
-    const formData = new FormData(this._element.querySelector(`form`));
-    const newData = this._processForm(formData);
-
-    if (typeof this._onSubmit === `function`) {
-      this._onSubmit(newData);
-    }
-
-    this.update(newData);
-  }
-
-  /**
-   * Метод-обработчик нажатия на кнопку Delete.
-   * @param {Object} evt - объект события Event
-   */
-  _onDeleteButtonClick(evt) {
-    evt.preventDefault();
-    if (typeof this._onDelete === `function`) {
-      this._onDelete({id: this._id});
-    }
-  }
-
-  /**
-   * Метод-обработчик для выбора/отмены оффера.
-   * @param {Object} evt - объект события Event
-   */
-  _onOfferChange(evt) {
-    evt.preventDefault();
-    // const formData = new FormData(this._element.querySelector(`form`));
-    // const newData = this._processForm(formData);
-    if (typeof this._onOffer === `function`) {
-      this._onOffer(evt);
-    }
-    // this.update(newData);
-  }
-
-  /**
-   * Метод-обработчик для изменения типа.
-   * @param {Object} evt - объект события Event
-   */
-  _onTypeChange(evt) {
-    evt.preventDefault();
-    if (typeof this._onType === `function`) {
-      this._onType(evt);
-    }
+  set onEsc(fn) {
+    this._onEsc = fn;
   }
 
   /**
@@ -100,17 +59,6 @@ export default class PointEdit extends Component {
    */
   set onType(fn) {
     this._onType = fn;
-  }
-
-  /**
-   * Метод-обработчик для изменения направления.
-   * @param {Object} evt - объект события Event
-   */
-  _onDestinationChange(evt) {
-    evt.preventDefault();
-    if (typeof this._onDestination === `function`) {
-      this._onDestination(evt);
-    }
   }
 
   /**
@@ -170,6 +118,78 @@ export default class PointEdit extends Component {
   }
 
   /**
+   * Метод-обработчик нажатия на кнопку Esc.
+   * @param {Object} evt - объект события Event
+   */
+  _onEscPress(evt) {
+    evt.preventDefault();
+    if (evt.keyCode === ESC_KEYCODE && typeof this._onEsc === `function`) {
+      this._onEsc();
+    }
+  }
+
+  /**
+   * Метод-обработчик нажатия на кнопку Save.
+   * @param {Object} evt - объект события Event
+   */
+  _onFormSubmit(evt) {
+    evt.preventDefault();
+    this._element.querySelector(`.point__total-price`).value = this.price;
+    const formData = new FormData(this._element.querySelector(`form`));
+    const newData = this._processForm(formData);
+
+    if (typeof this._onSubmit === `function`) {
+      this._onSubmit(newData);
+    }
+
+    this.update(newData);
+  }
+
+  /**
+   * Метод-обработчик нажатия на кнопку Delete.
+   * @param {Object} evt - объект события Event
+   */
+  _onDeleteButtonClick(evt) {
+    evt.preventDefault();
+    if (typeof this._onDelete === `function`) {
+      this._onDelete({id: this._id});
+    }
+  }
+
+  /**
+   * Метод-обработчик для выбора/отмены оффера.
+   * @param {Object} evt - объект события Event
+   */
+  _onOfferChange(evt) {
+    evt.preventDefault();
+    if (typeof this._onOffer === `function`) {
+      this._onOffer(evt);
+    }
+  }
+
+  /**
+   * Метод-обработчик для изменения типа.
+   * @param {Object} evt - объект события Event
+   */
+  _onTypeChange(evt) {
+    evt.preventDefault();
+    if (typeof this._onType === `function`) {
+      this._onType(evt);
+    }
+  }
+
+  /**
+   * Метод-обработчик для изменения направления.
+   * @param {Object} evt - объект события Event
+   */
+  _onDestinationChange(evt) {
+    evt.preventDefault();
+    if (typeof this._onDestination === `function`) {
+      this._onDestination(evt);
+    }
+  }
+
+  /**
    * Метод для передачи состояния оффера.
    * @param {number} index - порядковый номер
    * @param {boolean} state - состояние
@@ -185,6 +205,15 @@ export default class PointEdit extends Component {
    */
   get template() {
     const destinations = this._availableDestinations.map((destination) => `<option value="${destination.name}"></option>`).join(``);
+    if (this._offers.length === 0) {
+      this._offers = this._offers = this._availableOffers.find((offer) => offer.type === this._type).offers.map((offer) => {
+        return {
+          title: offer.name,
+          price: offer.price,
+          accepted: false
+        };
+      });
+    }
     const offers = this._offers.map((offer) => {
       const offerTitle = offer.title;
       return `
@@ -204,7 +233,7 @@ export default class PointEdit extends Component {
         <header class="point__header">
           <label class="point__date">
             choose day
-            <input class="point__input" type="text" placeholder="MAR 18" name="day" value="${moment(this._dateFrom).format(`MMMM Do YYYY`)}">
+            <input class="point__input" type="text" name="day" value="${moment(this._dateFrom).format(`MMM YY`)}">
           </label>
 
           <div class="travel-way">
@@ -254,7 +283,7 @@ export default class PointEdit extends Component {
           <label class="point__price">
             write price
             <span class="point__price-currency">€</span>
-            <input class="point__input" type="text" value="${this.price}" name="price">
+            <input class="point__input" type="text" value="${this._basePrice}" name="price">
           </label>
 
           <div class="point__buttons">
@@ -298,10 +327,6 @@ export default class PointEdit extends Component {
     return this._basePrice + offerTotalPrice;
   }
 
-  updatePrice() {
-    this._element.querySelector(`.point__input[name="price"]`).value = this.price;
-  }
-
   /**
     * Метод для навешивания обработчиков.
     */
@@ -311,11 +336,26 @@ export default class PointEdit extends Component {
     this._element.querySelector(`.point__offers-wrap`).addEventListener(`change`, this._onOfferChange);
     this._element.querySelector(`.travel-way__select`).addEventListener(`change`, this._onTypeChange);
     this._element.querySelector(`.point__destination-input`).addEventListener(`change`, this._onDestinationChange);
+    document.addEventListener(`keyup`, this._onEscPress);
 
     const dateStartInput = this.element.querySelector(`input[name="date-start"]`);
     const dateEndInput = this.element.querySelector(`input[name="date-end"]`);
-    flatpickr(dateStartInput, {enableTime: true, noCalendar: true, altInput: true, altFormat: `H:i`, dateFormat: `H:i`});
-    flatpickr(dateEndInput, {enableTime: true, noCalendar: true, altInput: true, altFormat: `H:i`, dateFormat: `H:i`});
+    flatpickr(dateStartInput, {
+      enableTime: true,
+      altInput: true,
+      altFormat: `H:i`,
+      dateFormat: `Z`,
+      defaultDate: this._dateFrom,
+      onChange: (selectedDates) => (this._dateFrom = selectedDates[0])
+    });
+    flatpickr(dateEndInput, {
+      enableTime: true,
+      altInput: true,
+      altFormat: `H:i`,
+      dateFormat: `Z`,
+      defaultDate: this._dateTo,
+      onChange: (selectedDates) => (this._dateTo = selectedDates[0])
+    });
   }
 
   /**
@@ -327,6 +367,7 @@ export default class PointEdit extends Component {
     this._element.querySelector(`.point__offers-wrap`).removeEventListener(`change`, this._onOfferChange);
     this._element.querySelector(`.travel-way__select`).removeEventListener(`change`, this._onTypeChange);
     this._element.querySelector(`.point__destination-input`).removeEventListener(`change`, this._onDestinationChange);
+    document.removeEventListener(`click`, this._onEscPress);
   }
 
   /**
@@ -334,14 +375,15 @@ export default class PointEdit extends Component {
     * @param {Object} point - объект с данными для обновления.
     */
   update(point) {
-    this._name = point.name;
-    this._description = point.description;
-    this._type = point.type.replace(point.type[0], point.type[0].toUpperCase());
-    this._date = point.date;
-    this._duration = point.duration;
-    this._price = point.price;
+    this._name = point.destination.name;
+    this._description = point.destination.description;
+    this._type = point.type;
+    this._dateFrom = point.dateFrom;
+    this._dateTo = point.dateTo;
+    this._basePrice = point.price;
+    this._isFavorite = point.isFavorite;
     this._offers = point.offers;
-    this._photos = point.photos;
+    this._photos = point.destination.pictures;
   }
 
   /**
@@ -363,7 +405,6 @@ export default class PointEdit extends Component {
     const taskEditMapper = PointEdit.createMapper.call(this, entry);
 
     for (const pair of formData.entries()) {
-      // console.log(pair);
       const [property, value] = pair;
       if (taskEditMapper.hasOwnProperty(property)) {
         taskEditMapper[property](value);
@@ -380,27 +421,20 @@ export default class PointEdit extends Component {
     */
   static createMapper(target) {
     return {
-      'day': (value) => {
-
-      },
-      'date-start': (value) => {
-        target.dateFrom = Date.now();
-      },
-      'date-end': (value) => {
-        target.dateTo = Date.now();
-      },
+      'date-start': () => (target.dateFrom = this._dateFrom.getTime()),
+      'date-end': () => (target.dateTo = this._dateTo.getTime()),
       'price': (value) => (target.price = +value),
       'travel-way': (value) => (target.type = value),
-      'offer': (value) => {
-        target.offers.find((offer) => offer.title === value).accepted = true;
-      },
-      'destination': (value) => {
-        target.destination = this._availableDestinations.find((destination) => destination.name === value);
-      },
-      'favorite': (value) => (target.isFavorite = true)
+      'offer': (value) => (target.offers.find((offer) => offer.title === value).accepted = true),
+      'destination': (value) => (target.destination = this._availableDestinations.find((destination) => destination.name === value)),
+      'favorite': () => (target.isFavorite = true)
     };
   }
 
+  /**
+    * Метод для обновления описания и фотографий при изменении пункта назначения.
+    * @param {string} name - пункт назначения.
+    */
   destinationUpdate(name) {
     const destination = this._availableDestinations.find((dest) => dest.name === name);
     this._description = destination.description;
@@ -412,6 +446,10 @@ export default class PointEdit extends Component {
     this._element.querySelector(`.point__destination-images`).innerHTML = images;
   }
 
+  /**
+    * Метод для обновления доступных предложений при изменении типа точки.
+    * @param {string} type - тип точки.
+    */
   typeUpdate(type) {
     this._type = type;
     this._offers = this._availableOffers.find((offer) => offer.type === type).offers.map((offer) => {
@@ -436,6 +474,9 @@ export default class PointEdit extends Component {
     this.updatePrice();
   }
 
+  /**
+    * Метод для анимации shake.
+    */
   shake() {
     const ANIMATION_TIMEOUT = 600;
     this._element.style.animation = `shake ${ANIMATION_TIMEOUT / 1000}s`;

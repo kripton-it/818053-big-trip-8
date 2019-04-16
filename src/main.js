@@ -1,15 +1,20 @@
-import {types} from './utils.js';
-// import generatePoints from './generate-points.js';
 import Point from './point.js';
 import PointEdit from './point-edit.js';
-import Filter from './filter.js';
-import {getDataForChart, renderChart} from './stat.js';
+import FiltersContainer from './filters-container.js';
+import SortingContainer from './sorting-container.js';
+import Stat from './stat.js';
 import API from './api.js';
+import Day from './day.js';
+import PointAdapter from './point-adapter.js';
+import moment from 'moment';
 
-// const POINTS_NUMBER = 4;
+
 const AUTHORIZATION = `Basic dXNlMkBwYkNzd29yZAo=${Math.random()}`;
 const END_POINT = `https://es8-demo-srv.appspot.com/big-trip`;
-const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
+const api = new API({
+  endPoint: END_POINT,
+  authorization: AUTHORIZATION
+});
 const FILTERS = [
   {
     caption: `everything`,
@@ -22,34 +27,38 @@ const FILTERS = [
     caption: `past`,
   },
 ];
+const SORTING = [
+  {
+    caption: `event`,
+    isChecked: true,
+  },
+  {
+    caption: `time`,
+  },
+  {
+    caption: `price`,
+  },
+];
 const tripFilterElement = document.querySelector(`.trip-filter`);
+const tripSortingElement = document.querySelector(`.trip-sorting`);
 const tripDayElement = document.querySelector(`.trip-day__items`);
 const totalCostElement = document.querySelector(`.trip__total-cost`);
-/* const initialPoints = generatePoints(POINTS_NUMBER);
-const money = getDataForChart(initialPoints).sort((first, second) => second.total - first.total);
-const transport = getDataForChart(initialPoints).filter((it) => types.get(it.type).category === `transport`).sort((first, second) => second.count - first.count);
-const moneyConfig = {
-  target: document.querySelector(`.statistic__money`),
-  type: `money`,
-  labels: money.map((it) => `${types.get(it.type).icon} ${it.type.toUpperCase()}`),
-  dataSet: money.map((it) => it.total),
-  prefix: `€ `
-};
-const transportConfig = {
-  target: document.querySelector(`.statistic__transport`),
-  type: `transport`,
-  labels: transport.map((it) => `${types.get(it.type).icon} ${it.type.toUpperCase()}`),
-  dataSet: transport.map((it) => it.count),
-  prefix: `x`
-};*/
+const newEventButton = document.querySelector(`.new-event`);
 let totalPrice = 0;
 let availableDestinations = [];
 let availableOffers = [];
 let localPoints = [];
+let stat;
+let days = [];
+let sortOption = `event`;
+const tripPoints = document.querySelector(`.trip-points`);
+const tableControl = document.querySelector(`.view-switch__item[href="#table"]`);
+const statControl = document.querySelector(`.view-switch__item[href="#stats"]`);
+const statContainer = document.querySelector(`.statistic`);
 
 /**
- * функция для фильтрации массива объектов
- * @param {Array} points - массив с данными
+ * функция для фильтрации массива точек
+ * @param {Array} points - массив точек
  * @param {string} filterName - имя фильтра
  * @return {Array} отфильтрованный массив
  */
@@ -61,15 +70,44 @@ const filterPoints = (points, filterName) => {
       break;
 
     case `filter-future`:
-      result = points.filter((point) => point.date > Date.now());
+      result = points.filter((point) => point.dateFrom > Date.now());
       break;
 
     case `filter-past`:
-      result = points.filter((point) => point.date < Date.now());
+      result = points.filter((point) => point.dateFrom < Date.now());
       break;
   }
   return result;
 };
+
+/**
+ * функция для отрисовки статистики
+ * @param {Array} points - массив с данными
+ */
+const renderStats = (points) => {
+  if (stat) {
+    stat.clear();
+  }
+  stat = new Stat(points);
+  stat.render();
+};
+
+/**
+ * функция для разбиения массива точек по дням
+ * @param {Array} points - массив с данными
+ * @return {Array} массив дней
+ */
+const getDays = (points) => points.reduce((acc, point) => {
+  const currentDay = moment(point.dateFrom).format(`DD MMMM YYYY`);
+  const newAcc = acc;
+  const index = newAcc.findIndex((array) => array.every((item) => item.day === currentDay));
+  if (index >= 0) {
+    newAcc[index].push({day: currentDay, point});
+  } else {
+    newAcc.push([{day: currentDay, point}]);
+  }
+  return newAcc;
+}, []);
 
 /**
  * функция для отрисовки фильтров
@@ -78,22 +116,54 @@ const filterPoints = (points, filterName) => {
  */
 const renderFilters = (filters, container) => {
   container.innerHTML = ``;
-  const fragment = document.createDocumentFragment();
-  filters.forEach((filter) => {
-    const filterComponent = new Filter(filter);
-    /**
-     * колбэк для клика по фильтру
-     * @param {Object} evt - объект события Event
-     */
-    filterComponent.onFilter = (evt) => {
-      const filterName = evt.target.id || evt.target.htmlFor;
-      const filteredTasks = filterPoints(initialPoints, filterName);
-      renderPoints(filteredTasks, tripDayElement);
-    };
-    filterComponent.render();
-    fragment.appendChild(filterComponent.element);
-  });
-  container.appendChild(fragment);
+  const filtersContainer = new FiltersContainer(filters);
+  filtersContainer.onFilter = (evt) => {
+    const filterName = evt.target.htmlFor;
+    filtersContainer.element.querySelector(`#${filterName}`).checked = true;
+    const filteredPoints = filterPoints(localPoints, filterName);
+    renderDays(filteredPoints);
+    renderStats(filteredPoints);
+  };
+  filtersContainer.render(container);
+};
+
+/**
+ * функция для сортировки массива точек
+ * @param {Array} points - массив с данными
+ * @param {string} option - параметр сортировки
+ */
+const sortPoints = (points, option) => {
+  switch (option) {
+    case `event`:
+      break;
+    case `time`:
+      points.sort((first, second) => (second.point.dateTo - second.point.dateFrom) - (first.point.dateTo - first.point.dateFrom));
+      break;
+    case `price`:
+      points.sort((first, second) => {
+        const firstTotalPrice = first.point.basePrice + first.point.offers.filter((offer) => offer.accepted).map((offer) => offer.price).reduce((acc, price) => acc + price, 0);
+        const secondTotalPrice = second.point.basePrice + second.point.offers.filter((offer) => offer.accepted).map((offer) => offer.price).reduce((acc, price) => acc + price, 0);
+        return secondTotalPrice - firstTotalPrice;
+      });
+      break;
+  }
+};
+
+/**
+ * функция для отрисовки параметров сортировки
+ * @param {Object} sorting - массив объектов с данными параметров сортировки
+ * @param {Object} container - DOM-элемент, в который нужно отрисовать параметр сортировки
+ */
+const renderSorting = (sorting, container) => {
+  container.innerHTML = ``;
+  const sortingContainer = new SortingContainer(sorting);
+  sortingContainer.onSort = (evt) => {
+    const sortName = evt.target.htmlFor;
+    sortOption = sortName.split(`-`)[1];
+    renderDays(localPoints);
+    sortingContainer.element.querySelector(`#${sortName}`).checked = true;
+  };
+  sortingContainer.render(container);
 };
 
 /**
@@ -108,27 +178,6 @@ const updatePoint = (points, pointToUpdate, newPoint) => {
 };
 
 /**
- * функция для удаления одного объекта с данными в массиве объектов
- * @param {Array} points - массив с данными
- * @param {Object} pointToDelete - объект, который надо удалить
- * @return {Array} массив с удалённым объектом
- */
-const deletePoint = (points, pointToDelete) => {
-  const index = points.findIndex((point) => point === pointToDelete);
-  points.splice(index, 1);
-  return points;
-};
-
-/**
- * функция для записи суммарной цены
- * @param {number} price - цена
- * @param {Object} container - элемент, в который надо записать цену
- */
-const setTotalPrice = (price, container) => {
-  container.innerHTML = `&euro;&nbsp;${price}`;
-};
-
-/**
  * функция для отрисовки массива точек маршрута
  * @param {Array} points - массив с данными
  * @param {Object} container - DOM-элемент, в который нужно отрисовать точки маршрута
@@ -136,13 +185,13 @@ const setTotalPrice = (price, container) => {
 const renderPoints = (points, container) => {
   container.innerHTML = ``;
   const fragment = document.createDocumentFragment();
-
   points.forEach((point) => {
     const pointComponent = new Point(point);
     /**
      * колбэк для перехода в режим редактирования
      */
     pointComponent.onClick = () => {
+      const oldTotalPrice = totalPrice;
       const pointEditComponent = new PointEdit(point);
       /**
        * колбэк для выбора/отмены оффера
@@ -151,13 +200,10 @@ const renderPoints = (points, container) => {
       const onOffer = (evt) => {
         const offerIndex = point.offers.findIndex((it) => it.title === evt.target.value);
         const currentOffer = point.offers[offerIndex];
-        currentOffer.accepted = evt.target.checked;
-        pointEditComponent.changeOfferState(offerIndex, evt.target.checked);
-        pointEditComponent.updatePrice();
         const currentPrice = currentOffer.price;
         const totalPriceDifference = evt.target.checked ? currentPrice : -currentPrice;
         totalPrice += totalPriceDifference;
-        setTotalPrice(totalPrice, totalCostElement);
+        totalCostElement.innerHTML = `&euro;&nbsp;${totalPrice}`;
       };
 
       /**
@@ -170,8 +216,9 @@ const renderPoints = (points, container) => {
         api.deletePoint({id})
           .then(() => api.getPoints())
           .then((returnedPoints) => {
-            totalPrice = 0;
-            renderPoints(returnedPoints, container);
+            localPoints = returnedPoints;
+            renderDays(localPoints);
+            renderStats(localPoints);
           })
           .catch(() => {
             unblock();
@@ -182,24 +229,11 @@ const renderPoints = (points, container) => {
       };
 
       /**
-     * функция для ререндеринга пришедшей с сервера точки
-     * @param {Object} newPoint - пришедшая с сервера точка
-     */
-      const rerender = (newPoint) => {
-        pointComponent.update(newPoint);
-        pointComponent.render();
-        container.replaceChild(pointComponent.element, pointEditComponent.element);
-        pointEditComponent.unrender();
-        point = newPoint;
-      };
-
-      /**
        * колбэк для выхода из режима редактирования
        * @param {Object} newObject - объект, из которого обновляется информация
        */
       const onSubmit = (newObject) => {
         pointEditComponent.element.style.border = `none`;
-
         for (const key in newObject) {
           if (newObject[key]) {
             point[key] = newObject[key];
@@ -208,18 +242,23 @@ const renderPoints = (points, container) => {
 
         block();
         saveButton.textContent = `Saving...`;
-
-        api.updatePoint({id: point.id, data: point.toRAW()})
-        .then((newPoint) => {
-          unblock();
-          rerender(newPoint);
+        api.updatePoint({
+          id: point.id,
+          data: PointAdapter.toRAW(point)
         })
-        .catch(() => {
-          unblock();
-          pointEditComponent.shake();
-          saveButton.textContent = `Save`;
-          pointEditComponent.element.style.border = `1px solid red`;
-        });
+          .then((newPoint) => {
+            unblock();
+            updatePoint(localPoints, point, newPoint);
+            localPoints.sort((first, second) => first.dateFrom - second.dateFrom);
+            renderDays(localPoints);
+            renderStats(localPoints);
+          })
+          .catch(() => {
+            unblock();
+            pointEditComponent.shake();
+            saveButton.textContent = `Save`;
+            pointEditComponent.element.style.border = `1px solid red`;
+          });
       };
       const onDestination = (evt) => {
         pointEditComponent.destinationUpdate(evt.target.value);
@@ -238,7 +277,13 @@ const renderPoints = (points, container) => {
         pointEditComponent.typeUpdate(evt.target.value);
         const newPrice = pointEditComponent.price;
         totalPrice += newPrice;
-        setTotalPrice(totalPrice, totalCostElement);
+        totalCostElement.innerHTML = `&euro;&nbsp;${totalPrice}`;
+      };
+      const onEsc = () => {
+        pointComponent.render();
+        container.replaceChild(pointComponent.element, pointEditComponent.element);
+        totalPrice = oldTotalPrice;
+        totalCostElement.innerHTML = `&euro;&nbsp;${totalPrice}`;
       };
 
       pointEditComponent.availableDestinations = availableDestinations;
@@ -247,6 +292,7 @@ const renderPoints = (points, container) => {
       pointEditComponent.onDelete = onDelete;
       pointEditComponent.onOffer = onOffer;
       pointEditComponent.onType = onType;
+      pointEditComponent.onEsc = onEsc;
       pointEditComponent.onDestination = onDestination;
       pointEditComponent.render();
       const saveButton = pointEditComponent.element.querySelector(`.point__button--save`);
@@ -274,29 +320,150 @@ const renderPoints = (points, container) => {
     fragment.appendChild(pointComponent.element);
   });
   container.appendChild(fragment);
-  setTotalPrice(totalPrice, totalCostElement);
+  totalCostElement.innerHTML = `&euro;&nbsp;${totalPrice}`;
 };
 
 /**
- * функция для отрисовки полученных с сервера точек
- * @param {Array} points - массив объектов PointAdapter с данными
+ * функция для отрисовки дней маршрута
+ * @param {Array} points - массив с точками
  */
-const render = (points) => {
-  // noTasksElement.classList.add(`visually-hidden`);
-  // boardTasksElement.classList.remove(`visually-hidden`);
-  renderFilters(FILTERS, tripFilterElement);
-  renderPoints(points, tripDayElement);
+const renderDays = (points) => {
+  totalPrice = 0;
+  tripPoints.innerHTML = ``;
+  days = getDays(points);
+  days.forEach((dayPoints) => {
+    sortPoints(dayPoints, sortOption);
+    const currentDay = new Day(dayPoints);
+    const currentDayElement = currentDay.render();
+    renderPoints(dayPoints.map((item) => item.point), currentDayElement.querySelector(`.trip-day__items`));
+    tripPoints.appendChild(currentDayElement);
+  });
 };
 
-// renderPoints(initialPoints, tripDayElement);
-// renderFilters(FILTERS, tripFilterElement);
-// renderChart(moneyConfig);
-// renderChart(transportConfig);
-tripDayElement.textContent = `Loading route...`;
+/**
+ * обработчик нажатия на кнопку Statistic
+ * @param {Object} evt - массив объектов с данными о фильтрах
+ */
+const onStatControlClick = (evt) => {
+  evt.preventDefault();
+  document.querySelector(`main`).classList.add(`visually-hidden`);
+  statContainer.classList.remove(`visually-hidden`);
+  statControl.classList.add(`view-switch__item--active`);
+  tableControl.classList.remove(`view-switch__item--active`);
+};
 
+/**
+ * обработчик нажатия на кнопку Table
+ * @param {Object} evt - массив объектов с данными о фильтрах
+ */
+const onTableControlClick = (evt) => {
+  evt.preventDefault();
+  document.querySelector(`main`).classList.remove(`visually-hidden`);
+  statContainer.classList.add(`visually-hidden`);
+  statControl.classList.remove(`view-switch__item--active`);
+  tableControl.classList.add(`view-switch__item--active`);
+};
+
+/**
+ * обработчик нажатия на кнопку New Event
+ * @param {Object} evt - массив объектов с данными о фильтрах
+ */
+const onNewEventButtonClick = () => {
+  const oldTotalPrice = totalPrice;
+  const newPointComponent = new PointEdit({dateFrom: Date.now(), dateTo: Date.now()});
+
+  newPointComponent.availableDestinations = availableDestinations;
+  newPointComponent.availableOffers = availableOffers;
+  const onDestination = (evt) => {
+    newPointComponent.destinationUpdate(evt.target.value);
+  };
+  newPointComponent.onDestination = onDestination;
+  const onType = (evt) => {
+    const oldPrice = newPointComponent.price;
+    totalPrice -= oldPrice;
+    newPointComponent.typeUpdate(evt.target.value);
+    const newPrice = newPointComponent.price;
+    totalPrice += newPrice;
+    totalCostElement.innerHTML = `&euro;&nbsp;${totalPrice}`;
+  };
+  newPointComponent.onType = onType;
+  const onDelete = () => {
+    newEventButton.addEventListener(`click`, onNewEventButtonClick);
+    newPointComponent.element.remove();
+  };
+  newPointComponent.onDelete = onDelete;
+  const onOffer = (evt) => {
+    const offerIndex = newPointComponent._offers.findIndex((it) => it.title === evt.target.value);
+    const currentOffer = newPointComponent._offers[offerIndex];
+    const currentPrice = currentOffer.price;
+    const totalPriceDifference = evt.target.checked ? currentPrice : -currentPrice;
+    totalPrice += totalPriceDifference;
+    totalCostElement.innerHTML = `&euro;&nbsp;${totalPrice}`;
+  };
+  newPointComponent.onOffer = onOffer;
+  const onEsc = () => {
+    newEventButton.addEventListener(`click`, onNewEventButtonClick);
+    newPointComponent.element.remove();
+    totalPrice = oldTotalPrice;
+    totalCostElement.innerHTML = `&euro;&nbsp;${totalPrice}`;
+  };
+  newPointComponent.onEsc = onEsc;
+  /**
+    * блокировка формы
+    */
+  const block = () => {
+    saveButton.disabled = true;
+    deleteButton.disabled = true;
+  };
+
+  /**
+    * разблокировка формы
+    */
+  const unblock = () => {
+    saveButton.disabled = false;
+    deleteButton.disabled = false;
+  };
+  const onSubmit = (newObject) => {
+    newPointComponent.element.style.border = `none`;
+    block();
+    saveButton.textContent = `Saving...`;
+
+    api.createPoint({data: PointAdapter.toRAW(newObject)})
+      .then((newPoint) => {
+        unblock();
+        localPoints.push(newPoint);
+        localPoints = localPoints.sort((first, second) => first.dateFrom - second.dateFrom);
+        renderFilters(FILTERS, tripFilterElement);
+        renderSorting(SORTING, tripSortingElement);
+        renderDays(localPoints);
+        renderStats(localPoints);
+      })
+      .catch(() => {
+        unblock();
+        newPointComponent.shake();
+        saveButton.textContent = `Save`;
+        newPointComponent.element.style.border = `1px solid red`;
+      });
+  };
+  newPointComponent.onSubmit = onSubmit;
+  newPointComponent.render();
+  const saveButton = newPointComponent.element.querySelector(`.point__button--save`);
+  const deleteButton = newPointComponent.element.querySelector(`.point__button[type="reset"]`);
+
+  tripPoints.insertAdjacentElement(`afterBegin`, newPointComponent.element);
+  newEventButton.removeEventListener(`click`, onNewEventButtonClick);
+};
+
+newEventButton.addEventListener(`click`, onNewEventButtonClick);
+statControl.addEventListener(`click`, onStatControlClick);
+tableControl.addEventListener(`click`, onTableControlClick);
+tripDayElement.textContent = `Loading route...`;
 api.getPoints().then((points) => {
-  localPoints = points;
-  render(localPoints);
+  localPoints = points.sort((first, second) => first.dateFrom - second.dateFrom);
+  renderFilters(FILTERS, tripFilterElement);
+  renderSorting(SORTING, tripSortingElement);
+  renderDays(localPoints);
+  renderStats(localPoints);
 }).catch(() => {
   tripDayElement.textContent = `Something went wrong while loading your route info. Check your connection or try again later`;
 });

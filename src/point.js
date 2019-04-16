@@ -17,13 +17,11 @@ export default class Point extends Component {
     super();
     this._id = point.id;
     this._name = point.name;
-    // this._description = point.description;
     this._type = point.type;
     this._dateFrom = point.dateFrom;
     this._dateTo = point.dateTo;
     this._basePrice = point.basePrice;
     this._offers = point.offers;
-    // this._photos = point.photos;
     this._onClick = null;
     this._onPointClick = this._onPointClick.bind(this);
   }
@@ -53,10 +51,6 @@ export default class Point extends Component {
    * @return {string} шаблонная строка
    */
   get template() {
-    if (this._id === `0`) {
-      console.log(this._dateFrom);
-      console.log(this._dateTo);
-    }
     const duration = getDuration(this._dateTo - this._dateFrom);
     const offersList = `<ul class="trip-point__offers">
         ${this._offers.slice(0, 3).map((offer) => `<li>
@@ -70,7 +64,7 @@ export default class Point extends Component {
         <span class="trip-point__timetable">${moment(this._dateFrom).format(`HH:mm`)} - ${moment(this._dateTo).format(`HH:mm`)}</span>
         <span class="trip-point__duration">${duration}</span>
       </p>
-      <p class="trip-point__price">&euro;&nbsp;${this.price}</p>
+      <p class="trip-point__price">&euro;&nbsp;${this._basePrice}</p>
       ${offersList}
     </article>`;
   }
