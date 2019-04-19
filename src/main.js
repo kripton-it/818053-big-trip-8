@@ -51,6 +51,7 @@ let localPoints = [];
 let stat;
 let days = [];
 let sortOption = `event`;
+let filterOption = `everything`;
 const tripPoints = document.querySelector(`.trip-points`);
 const tableControl = document.querySelector(`.view-switch__item[href="#table"]`);
 const statControl = document.querySelector(`.view-switch__item[href="#stats"]`);
@@ -59,21 +60,20 @@ const statContainer = document.querySelector(`.statistic`);
 /**
  * функция для фильтрации массива точек
  * @param {Array} points - массив точек
- * @param {string} filterName - имя фильтра
  * @return {Array} отфильтрованный массив
  */
-const filterPoints = (points, filterName) => {
+const filterPoints = (points) => {
   let result;
-  switch (filterName) {
-    case `filter-everything`:
+  switch (filterOption) {
+    case `everything`:
       result = points;
       break;
 
-    case `filter-future`:
+    case `future`:
       result = points.filter((point) => point.dateFrom > Date.now());
       break;
 
-    case `filter-past`:
+    case `past`:
       result = points.filter((point) => point.dateFrom < Date.now());
       break;
   }
@@ -119,10 +119,9 @@ const renderFilters = (filters, container) => {
   const filtersContainer = new FiltersContainer(filters);
   filtersContainer.onFilter = (evt) => {
     const filterName = evt.target.htmlFor;
+    filterOption = filterName.split(`-`)[1];
     filtersContainer.element.querySelector(`#${filterName}`).checked = true;
-    const filteredPoints = filterPoints(localPoints, filterName);
-    renderDays(filteredPoints);
-    renderStats(filteredPoints);
+    renderDays(localPoints);
   };
   filtersContainer.render(container);
 };
@@ -218,7 +217,6 @@ const renderPoints = (points, container) => {
           .then((returnedPoints) => {
             localPoints = returnedPoints;
             renderDays(localPoints);
-            renderStats(localPoints);
           })
           .catch(() => {
             unblock();
@@ -251,7 +249,6 @@ const renderPoints = (points, container) => {
             updatePoint(localPoints, point, newPoint);
             localPoints.sort((first, second) => first.dateFrom - second.dateFrom);
             renderDays(localPoints);
-            renderStats(localPoints);
           })
           .catch(() => {
             unblock();
@@ -328,9 +325,10 @@ const renderPoints = (points, container) => {
  * @param {Array} points - массив с точками
  */
 const renderDays = (points) => {
+  const filteredPoints = filterPoints(points);
   totalPrice = 0;
   tripPoints.innerHTML = ``;
-  days = getDays(points);
+  days = getDays(filteredPoints);
   days.forEach((dayPoints) => {
     sortPoints(dayPoints, sortOption);
     const currentDay = new Day(dayPoints);
@@ -338,6 +336,7 @@ const renderDays = (points) => {
     renderPoints(dayPoints.map((item) => item.point), currentDayElement.querySelector(`.trip-day__items`));
     tripPoints.appendChild(currentDayElement);
   });
+  renderStats(filteredPoints);
 };
 
 /**
@@ -433,10 +432,10 @@ const onNewEventButtonClick = () => {
         unblock();
         localPoints.push(newPoint);
         localPoints = localPoints.sort((first, second) => first.dateFrom - second.dateFrom);
-        renderFilters(FILTERS, tripFilterElement);
-        renderSorting(SORTING, tripSortingElement);
+        // renderFilters(FILTERS, tripFilterElement);
+        // renderSorting(SORTING, tripSortingElement);
         renderDays(localPoints);
-        renderStats(localPoints);
+        newEventButton.addEventListener(`click`, onNewEventButtonClick);
       })
       .catch(() => {
         unblock();
@@ -463,7 +462,6 @@ api.getPoints().then((points) => {
   renderFilters(FILTERS, tripFilterElement);
   renderSorting(SORTING, tripSortingElement);
   renderDays(localPoints);
-  renderStats(localPoints);
 }).catch(() => {
   tripDayElement.textContent = `Something went wrong while loading your route info. Check your connection or try again later`;
 });

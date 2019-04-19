@@ -268,7 +268,7 @@ export default class PointEdit extends Component {
 
           <div class="point__destination-wrap">
             <label class="point__destination-label" for="destination-${this._id}">${capitalize(this._type)} ${types.get(this._type).preposition}</label>
-            <input class="point__destination-input" list="destination-select-${this._id}" id="destination-${this._id}" value="${this._name}" name="destination">
+            <input class="point__destination-input" list="destination-select-${this._id}" id="destination-${this._id}" value="${this._name}" name="destination" required>
             <datalist id="destination-select-${this._id}">
               ${destinations}
             </datalist>
