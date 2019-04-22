@@ -43,6 +43,25 @@ export default class Stat {
   }
 
   /**
+   * Метод для отрисовки статистики.
+   */
+  render() {
+    this._getConfig();
+    this._config.forEach((config) => {
+      this._element.push(this._renderChart(config));
+    });
+  }
+
+  /**
+   * Метод для удаления статистики.
+   */
+  clear() {
+    this._element.forEach((element) => {
+      element.destroy();
+    });
+  }
+
+  /**
    * Метод для генерации конфигов диаграмм.
    * @return {Array} массив объектов-конфигов для диаграмм
    */
@@ -83,16 +102,6 @@ export default class Stat {
     };
     this._config = [moneyConfig, transportConfig, durationConfig];
     return this._config;
-  }
-
-  /**
-   * Метод для отрисовки статистики.
-   */
-  render() {
-    this._getConfig();
-    this._config.forEach((config) => {
-      this._element.push(this._renderChart(config));
-    });
   }
 
   /**
@@ -167,37 +176,5 @@ export default class Stat {
       }
     });
     return chart;
-  }
-
-  /**
-   * Метод для обновления одной диаграммы.
-   * @param {Object} chart - объект с диаграммой
-   * @param {Object} config - объект с параметрами
-   */
-  _updateChart(chart, config) {
-    chart.data.labels = config.labels;
-    chart.data.datasets.data = config.dataSet;
-    chart.update();
-  }
-
-  /**
-   * Метод для обновления статистики.
-   * @param {Array} points - массив точек
-   */
-  update(points) {
-    this._points = points;
-    const configs = this._getConfig();
-    configs.forEach((config, index) => {
-      this._updateChart(this._element[index], config);
-    });
-  }
-
-  /**
-   * Метод для удаления статистики.
-   */
-  clear() {
-    this._element.forEach((element) => {
-      element.destroy();
-    });
   }
 }

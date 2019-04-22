@@ -118,87 +118,6 @@ export default class PointEdit extends Component {
   }
 
   /**
-   * Метод-обработчик нажатия на кнопку Esc.
-   * @param {Object} evt - объект события Event
-   */
-  _onEscPress(evt) {
-    evt.preventDefault();
-    if (evt.keyCode === ESC_KEYCODE && typeof this._onEsc === `function`) {
-      this._onEsc();
-    }
-  }
-
-  /**
-   * Метод-обработчик нажатия на кнопку Save.
-   * @param {Object} evt - объект события Event
-   */
-  _onFormSubmit(evt) {
-    evt.preventDefault();
-    this._element.querySelector(`.point__total-price`).value = this.price;
-    const formData = new FormData(this._element.querySelector(`form`));
-    const newData = this._processForm(formData);
-
-    if (typeof this._onSubmit === `function`) {
-      this._onSubmit(newData);
-    }
-
-    this.update(newData);
-  }
-
-  /**
-   * Метод-обработчик нажатия на кнопку Delete.
-   * @param {Object} evt - объект события Event
-   */
-  _onDeleteButtonClick(evt) {
-    evt.preventDefault();
-    if (typeof this._onDelete === `function`) {
-      this._onDelete({id: this._id});
-    }
-  }
-
-  /**
-   * Метод-обработчик для выбора/отмены оффера.
-   * @param {Object} evt - объект события Event
-   */
-  _onOfferChange(evt) {
-    evt.preventDefault();
-    if (typeof this._onOffer === `function`) {
-      this._onOffer(evt);
-    }
-  }
-
-  /**
-   * Метод-обработчик для изменения типа.
-   * @param {Object} evt - объект события Event
-   */
-  _onTypeChange(evt) {
-    evt.preventDefault();
-    if (typeof this._onType === `function`) {
-      this._onType(evt);
-    }
-  }
-
-  /**
-   * Метод-обработчик для изменения направления.
-   * @param {Object} evt - объект события Event
-   */
-  _onDestinationChange(evt) {
-    evt.preventDefault();
-    if (typeof this._onDestination === `function`) {
-      this._onDestination(evt);
-    }
-  }
-
-  /**
-   * Метод для передачи состояния оффера.
-   * @param {number} index - порядковый номер
-   * @param {boolean} state - состояние
-   */
-  changeOfferState(index, state) {
-    this._offers[index].accepted = state;
-  }
-
-  /**
    * Геттер для получения шаблонной строки точки маршрута.
    *
    * @return  {string} шаблонная строка
@@ -268,7 +187,7 @@ export default class PointEdit extends Component {
 
           <div class="point__destination-wrap">
             <label class="point__destination-label" for="destination-${this._id}">${capitalize(this._type)} ${types.get(this._type).preposition}</label>
-            <input class="point__destination-input" list="destination-select-${this._id}" id="destination-${this._id}" value="${this._name}" name="destination">
+            <input class="point__destination-input" list="destination-select-${this._id}" id="destination-${this._id}" value="${this._name}" name="destination" required>
             <datalist id="destination-select-${this._id}">
               ${destinations}
             </datalist>
@@ -328,107 +247,12 @@ export default class PointEdit extends Component {
   }
 
   /**
-    * Метод для навешивания обработчиков.
-    */
-  _createListeners() {
-    this._element.querySelector(`form`).addEventListener(`submit`, this._onFormSubmit);
-    this._element.querySelector(`form .point__buttons button[type="reset"]`).addEventListener(`click`, this._onDeleteButtonClick);
-    this._element.querySelector(`.point__offers-wrap`).addEventListener(`change`, this._onOfferChange);
-    this._element.querySelector(`.travel-way__select`).addEventListener(`change`, this._onTypeChange);
-    this._element.querySelector(`.point__destination-input`).addEventListener(`change`, this._onDestinationChange);
-    document.addEventListener(`keyup`, this._onEscPress);
-
-    const dateStartInput = this.element.querySelector(`input[name="date-start"]`);
-    const dateEndInput = this.element.querySelector(`input[name="date-end"]`);
-    flatpickr(dateStartInput, {
-      enableTime: true,
-      altInput: true,
-      altFormat: `H:i`,
-      dateFormat: `Z`,
-      defaultDate: this._dateFrom,
-      onChange: (selectedDates) => (this._dateFrom = selectedDates[0])
-    });
-    flatpickr(dateEndInput, {
-      enableTime: true,
-      altInput: true,
-      altFormat: `H:i`,
-      dateFormat: `Z`,
-      defaultDate: this._dateTo,
-      onChange: (selectedDates) => (this._dateTo = selectedDates[0])
-    });
-  }
-
-  /**
-    * Метод для удаления обработчиков.
-    */
-  _removeListeners() {
-    this._element.querySelector(`form`).removeEventListener(`submit`, this._onFormSubmit);
-    this._element.querySelector(`form .point__buttons button[type="reset"]`).removeEventListener(`click`, this._onDeleteButtonClick);
-    this._element.querySelector(`.point__offers-wrap`).removeEventListener(`change`, this._onOfferChange);
-    this._element.querySelector(`.travel-way__select`).removeEventListener(`change`, this._onTypeChange);
-    this._element.querySelector(`.point__destination-input`).removeEventListener(`change`, this._onDestinationChange);
-    document.removeEventListener(`click`, this._onEscPress);
-  }
-
-  /**
-    * Метод для обновления данных.
-    * @param {Object} point - объект с данными для обновления.
-    */
-  update(point) {
-    this._name = point.destination.name;
-    this._description = point.destination.description;
-    this._type = point.type;
-    this._dateFrom = point.dateFrom;
-    this._dateTo = point.dateTo;
-    this._basePrice = point.price;
-    this._isFavorite = point.isFavorite;
-    this._offers = point.offers;
-    this._photos = point.destination.pictures;
-  }
-
-  /**
-   * Вспомогательный метод для конвертации информации из формы в формат, понятный компоненту.
-   * @param {Array} formData - данные из формы (массив массивов [поле, значение])
-   * @return {Object} - объект, в который записана информация из формы
+   * Метод для передачи состояния оффера.
+   * @param {number} index - порядковый номер
+   * @param {boolean} state - состояние
    */
-  _processForm(formData) {
-    const entry = {
-      destination: {},
-      dateFrom: 0,
-      dateTo: 0,
-      type: ``,
-      price: 0,
-      isFavorite: false,
-      offers: this._offers.map((offer) => Object.assign({}, offer, {accepted: false})),
-    };
-
-    const taskEditMapper = PointEdit.createMapper.call(this, entry);
-
-    for (const pair of formData.entries()) {
-      const [property, value] = pair;
-      if (taskEditMapper.hasOwnProperty(property)) {
-        taskEditMapper[property](value);
-      }
-    }
-    return entry;
-  }
-
-  /**
-    * Статический метод для преобразования данных.
-    * Его задача - сопоставить поля формы с полями структуры и записать в них полученные значения.
-    * @param {Object} target - объект, в который будет записан результат преобразования.
-    * @return {Object} - новый объект, поля которого - это функции для преобразования значений из соответствующих полей формы и записи результата в target.
-    */
-  static createMapper(target) {
-    return {
-      'date-start': () => (target.dateFrom = this._dateFrom.getTime()),
-      'date-end': () => (target.dateTo = this._dateTo.getTime()),
-      'price': (value) => (target.price = +value),
-      'travel-way': (value) => (target.type = value),
-      'offer': (value) => (target.offers.find((offer) => offer.title === value).accepted = true),
-      'destination': (value) => (target.destination = this._availableDestinations.find((destination) => destination.name === value)),
-      'favorite': () => (target.isFavorite = true)
-    };
+  changeOfferState(index, state) {
+    this._offers[index].accepted = state;
   }
 
   /**
@@ -484,5 +308,181 @@ export default class PointEdit extends Component {
     setTimeout(() => {
       this._element.style.animation = ``;
     }, ANIMATION_TIMEOUT);
+  }
+
+  /**
+    * Метод для навешивания обработчиков.
+    */
+  _createListeners() {
+    this._element.querySelector(`form`).addEventListener(`submit`, this._onFormSubmit);
+    this._element.querySelector(`form .point__buttons button[type="reset"]`).addEventListener(`click`, this._onDeleteButtonClick);
+    this._element.querySelector(`.point__offers-wrap`).addEventListener(`change`, this._onOfferChange);
+    this._element.querySelector(`.travel-way__select`).addEventListener(`change`, this._onTypeChange);
+    this._element.querySelector(`.point__destination-input`).addEventListener(`change`, this._onDestinationChange);
+    document.addEventListener(`keyup`, this._onEscPress);
+
+    const dateStartInput = this.element.querySelector(`input[name="date-start"]`);
+    const dateEndInput = this.element.querySelector(`input[name="date-end"]`);
+    flatpickr(dateStartInput, {
+      enableTime: true,
+      altInput: true,
+      altFormat: `H:i`,
+      dateFormat: `Z`,
+      defaultDate: this._dateFrom,
+      onChange: (selectedDates) => (this._dateFrom = selectedDates[0])
+    });
+    flatpickr(dateEndInput, {
+      enableTime: true,
+      altInput: true,
+      altFormat: `H:i`,
+      dateFormat: `Z`,
+      defaultDate: this._dateTo,
+      onChange: (selectedDates) => (this._dateTo = selectedDates[0])
+    });
+  }
+
+  /**
+    * Метод для удаления обработчиков.
+    */
+  _removeListeners() {
+    this._element.querySelector(`form`).removeEventListener(`submit`, this._onFormSubmit);
+    this._element.querySelector(`form .point__buttons button[type="reset"]`).removeEventListener(`click`, this._onDeleteButtonClick);
+    this._element.querySelector(`.point__offers-wrap`).removeEventListener(`change`, this._onOfferChange);
+    this._element.querySelector(`.travel-way__select`).removeEventListener(`change`, this._onTypeChange);
+    this._element.querySelector(`.point__destination-input`).removeEventListener(`change`, this._onDestinationChange);
+    document.removeEventListener(`click`, this._onEscPress);
+  }
+
+  /**
+   * Вспомогательный метод для конвертации информации из формы в формат, понятный компоненту.
+   * @param {Array} formData - данные из формы (массив массивов [поле, значение])
+   * @return {Object} - объект, в который записана информация из формы
+   */
+  _processForm(formData) {
+    const entry = {
+      destination: {},
+      dateFrom: 0,
+      dateTo: 0,
+      type: ``,
+      price: 0,
+      isFavorite: false,
+      offers: this._offers.map((offer) => Object.assign({}, offer, {accepted: false})),
+    };
+
+    const taskEditMapper = PointEdit.createMapper.call(this, entry);
+
+    for (const pair of formData.entries()) {
+      const [property, value] = pair;
+      if (taskEditMapper.hasOwnProperty(property)) {
+        taskEditMapper[property](value);
+      }
+    }
+    return entry;
+  }
+
+  /**
+   * Метод-обработчик нажатия на кнопку Esc.
+   * @param {Object} evt - объект события Event
+   */
+  _onEscPress(evt) {
+    evt.preventDefault();
+    if (evt.keyCode === ESC_KEYCODE && typeof this._onEsc === `function`) {
+      this._onEsc();
+    }
+  }
+
+  /**
+    * Метод для обновления данных.
+    * @param {Object} point - объект с данными для обновления.
+    */
+  _update(point) {
+    this._name = point.destination.name;
+    this._description = point.destination.description;
+    this._type = point.type;
+    this._dateFrom = point.dateFrom;
+    this._dateTo = point.dateTo;
+    this._basePrice = point.price;
+    this._isFavorite = point.isFavorite;
+    this._offers = point.offers;
+    this._photos = point.destination.pictures;
+  }
+
+  /**
+   * Метод-обработчик нажатия на кнопку Save.
+   * @param {Object} evt - объект события Event
+   */
+  _onFormSubmit(evt) {
+    evt.preventDefault();
+    this._element.querySelector(`.point__total-price`).value = this.price;
+    const formData = new FormData(this._element.querySelector(`form`));
+    const newData = this._processForm(formData);
+
+    if (typeof this._onSubmit === `function`) {
+      this._onSubmit(newData);
+    }
+
+    this._update(newData);
+  }
+
+  /**
+   * Метод-обработчик нажатия на кнопку Delete.
+   * @param {Object} evt - объект события Event
+   */
+  _onDeleteButtonClick(evt) {
+    evt.preventDefault();
+    if (typeof this._onDelete === `function`) {
+      this._onDelete({id: this._id});
+    }
+  }
+
+  /**
+   * Метод-обработчик для выбора/отмены оффера.
+   * @param {Object} evt - объект события Event
+   */
+  _onOfferChange(evt) {
+    evt.preventDefault();
+    if (typeof this._onOffer === `function`) {
+      this._onOffer(evt);
+    }
+  }
+
+  /**
+   * Метод-обработчик для изменения типа.
+   * @param {Object} evt - объект события Event
+   */
+  _onTypeChange(evt) {
+    evt.preventDefault();
+    if (typeof this._onType === `function`) {
+      this._onType(evt);
+    }
+  }
+
+  /**
+   * Метод-обработчик для изменения направления.
+   * @param {Object} evt - объект события Event
+   */
+  _onDestinationChange(evt) {
+    evt.preventDefault();
+    if (typeof this._onDestination === `function`) {
+      this._onDestination(evt);
+    }
+  }
+
+  /**
+    * Статический метод для преобразования данных.
+    * Его задача - сопоставить поля формы с полями структуры и записать в них полученные значения.
+    * @param {Object} target - объект, в который будет записан результат преобразования.
+    * @return {Object} - новый объект, поля которого - это функции для преобразования значений из соответствующих полей формы и записи результата в target.
+    */
+  static createMapper(target) {
+    return {
+      'date-start': () => (target.dateFrom = this._dateFrom.getTime()),
+      'date-end': () => (target.dateTo = this._dateTo.getTime()),
+      'price': (value) => (target.price = +value),
+      'travel-way': (value) => (target.type = value),
+      'offer': (value) => (target.offers.find((offer) => offer.title === value).accepted = true),
+      'destination': (value) => (target.destination = this._availableDestinations.find((destination) => destination.name === value)),
+      'favorite': () => (target.isFavorite = true)
+    };
   }
 }

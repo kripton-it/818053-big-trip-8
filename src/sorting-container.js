@@ -19,35 +19,11 @@ export default class SortingContainer extends Component {
   }
 
   /**
-   * Метод-обработчик нажатия на параметр сортировки.
-   * @param {Object} evt - объект события Event
-   */
-  _onSortClick(evt) {
-    evt.preventDefault();
-    if (typeof this._onSort === `function`) {
-      this._onSort(evt);
-    }
-  }
-
-  /**
    * Сеттер для передачи колбэка при выборе параметра сортировки.
    * @param {Function} fn - передаваемая функция-колбэк
    */
   set onSort(fn) {
     this._onSort = fn;
-  }
-
-  /**
-   * Метод для получения шаблонной строки одного параметра сортировки.
-   * @param {Object} sorting - объект с данными параметра сортировки
-   * @return {string} шаблонная строка
-   */
-  _sortingTemplate(sorting) {
-    const checkedAttribute = sorting.isChecked ? ` checked` : ``;
-    const value = sorting.caption;
-    const idAttribute = `sorting-${value}`;
-    return `<input type="radio" name="trip-sorting" id="${idAttribute}" value="${value}"${checkedAttribute}>
-    <label class="trip-sorting__item trip-sorting__item--${value}" for="${idAttribute}">${value}</label>`;
   }
 
   /**
@@ -75,6 +51,19 @@ export default class SortingContainer extends Component {
   }
 
   /**
+   * Метод для получения шаблонной строки одного параметра сортировки.
+   * @param {Object} sorting - объект с данными параметра сортировки
+   * @return {string} шаблонная строка
+   */
+  _sortingTemplate(sorting) {
+    const checkedAttribute = sorting.isChecked ? ` checked` : ``;
+    const value = sorting.caption;
+    const idAttribute = `sorting-${value}`;
+    return `<input type="radio" name="trip-sorting" id="${idAttribute}" value="${value}"${checkedAttribute}>
+    <label class="trip-sorting__item trip-sorting__item--${value}" for="${idAttribute}">${value}</label>`;
+  }
+
+  /**
     * Метод для навешивания обработчиков.
     */
   _createListeners() {
@@ -86,5 +75,16 @@ export default class SortingContainer extends Component {
     */
   _removeListeners() {
     this._element.removeEventListener(`click`, this._onSortClick);
+  }
+
+  /**
+   * Метод-обработчик нажатия на параметр сортировки.
+   * @param {Object} evt - объект события Event
+   */
+  _onSortClick(evt) {
+    evt.preventDefault();
+    if (typeof this._onSort === `function`) {
+      this._onSort(evt);
+    }
   }
 }
