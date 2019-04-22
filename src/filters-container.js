@@ -19,35 +19,11 @@ export default class FiltersContainer extends Component {
   }
 
   /**
-   * Метод-обработчик нажатия на фильтр.
-   * @param {Object} evt - объект события Event
-   */
-  _onFilterClick(evt) {
-    evt.preventDefault();
-    if (typeof this._onFilter === `function`) {
-      this._onFilter(evt);
-    }
-  }
-
-  /**
    * Сеттер для передачи колбэка при выборе фильтра.
    * @param {Function} fn - передаваемая функция-колбэк
    */
   set onFilter(fn) {
     this._onFilter = fn;
-  }
-
-  /**
-   * Метод для получения шаблонной строки одного фильтра.
-   * @param {Object} filter - объект с данными фильтра
-   * @return {string} шаблонная строка
-   */
-  _filterTemplate(filter) {
-    const checkedAttribute = filter.isChecked ? ` checked` : ``;
-    const value = filter.caption.toLowerCase();
-    const idAttribute = `filter-${value}`;
-    return `<input type="radio" id="${idAttribute}" name="filter" value="${value}"${checkedAttribute}>
-    <label class="trip-filter__item" for="${idAttribute}">${filter.caption}</label>`;
   }
 
   /**
@@ -74,6 +50,19 @@ export default class FiltersContainer extends Component {
   }
 
   /**
+   * Метод для получения шаблонной строки одного фильтра.
+   * @param {Object} filter - объект с данными фильтра
+   * @return {string} шаблонная строка
+   */
+  _filterTemplate(filter) {
+    const checkedAttribute = filter.isChecked ? ` checked` : ``;
+    const value = filter.caption.toLowerCase();
+    const idAttribute = `filter-${value}`;
+    return `<input type="radio" id="${idAttribute}" name="filter" value="${value}"${checkedAttribute}>
+    <label class="trip-filter__item" for="${idAttribute}">${filter.caption}</label>`;
+  }
+
+  /**
     * Метод для навешивания обработчиков.
     */
   _createListeners() {
@@ -85,5 +74,16 @@ export default class FiltersContainer extends Component {
     */
   _removeListeners() {
     this._element.removeEventListener(`click`, this._onFilterClick);
+  }
+
+  /**
+   * Метод-обработчик нажатия на фильтр.
+   * @param {Object} evt - объект события Event
+   */
+  _onFilterClick(evt) {
+    evt.preventDefault();
+    if (typeof this._onFilter === `function`) {
+      this._onFilter(evt);
+    }
   }
 }

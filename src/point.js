@@ -27,17 +27,6 @@ export default class Point extends Component {
   }
 
   /**
-   * Метод-обработчик нажатия на точку маршрута.
-   * @param {Object} evt - объект события Event
-   */
-  _onPointClick(evt) {
-    evt.preventDefault();
-    if (typeof this._onClick === `function`) {
-      this._onClick();
-    }
-  }
-
-  /**
    * Сеттер для передачи колбэка по нажатию на точку маршрута.
    * @param {Function} fn - передаваемая функция-колбэк
    */
@@ -94,15 +83,13 @@ export default class Point extends Component {
   }
 
   /**
-    * Метод для обновления данных.
-    * @param {Object} point - объект с данными для обновления.
-    */
-  update(point) {
-    this._name = point.name;
-    this._type = point.type;
-    this._dateFrom = point.dateFrom;
-    this._dateTo = point.dateTo;
-    this._basePrice = point.basePrice;
-    this._offers = point.offers;
+   * Метод-обработчик нажатия на точку маршрута.
+   * @param {Object} evt - объект события Event
+   */
+  _onPointClick(evt) {
+    evt.preventDefault();
+    if (typeof this._onClick === `function`) {
+      this._onClick();
+    }
   }
 }
