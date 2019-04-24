@@ -187,7 +187,7 @@ export default class PointEdit extends Component {
 
           <div class="point__destination-wrap">
             <label class="point__destination-label" for="destination-${this._id}">${capitalize(this._type)} ${types.get(this._type).preposition}</label>
-            <input class="point__destination-input" list="destination-select-${this._id}" id="destination-${this._id}" value="${this._name}" name="destination" required>
+            <input class="point__destination-input" list="destination-select-${this._id}" id="destination-${this._id}" value="" name="destination" required>
             <datalist id="destination-select-${this._id}">
               ${destinations}
             </datalist>
@@ -234,6 +234,21 @@ export default class PointEdit extends Component {
         </section>
       </form>
     </article>`;
+  }
+
+  /**
+   * Метод для создания DOM-элемента по шаблону.
+   * Также навешивает все необходимые обработчики.
+   *
+   * @return  {object} DOM-элемент
+   */
+  render() {
+    const newElement = document.createElement(`div`);
+    newElement.innerHTML = this.template;
+    this._element = newElement.firstChild;
+    this._createListeners();
+    this._element.querySelector(`.point__destination-input`).value = this._name;
+    return this._element;
   }
 
   /**
@@ -286,7 +301,7 @@ export default class PointEdit extends Component {
       };
     });
     const offers = this._offers.map((offer) => {
-      const offerTitle = offer.title.replace(/<|>/g, ``);
+      const offerTitle = offer.title;
       return `
       <input class="point__offers-input visually-hidden" type="checkbox" id="${offerTitle}-${this._id}" name="offer" value="${offerTitle}"${offer.accepted ? ` checked` : ``}>
       <label for="${offerTitle}-${this._id}" class="point__offers-label">

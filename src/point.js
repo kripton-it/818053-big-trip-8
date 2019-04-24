@@ -48,7 +48,7 @@ export default class Point extends Component {
       </ul>`;
     return `<article class="trip-point">
       <i class="trip-icon">${types.get(this._type).icon}</i>
-      <h3 class="trip-point__title">${`${capitalize(this._type)} ${types.get(this._type).preposition} ${this._name}`}</h3>
+      <h3 class="trip-point__title"></h3>
       <p class="trip-point__schedule">
         <span class="trip-point__timetable">${moment(this._dateFrom).format(`HH:mm`)} - ${moment(this._dateTo).format(`HH:mm`)}</span>
         <span class="trip-point__duration">${duration}</span>
@@ -56,6 +56,21 @@ export default class Point extends Component {
       <p class="trip-point__price">&euro;&nbsp;${this._basePrice}</p>
       ${offersList}
     </article>`;
+  }
+
+  /**
+   * Метод для создания DOM-элемента по шаблону.
+   * Также навешивает все необходимые обработчики.
+   *
+   * @return  {object} DOM-элемент
+   */
+  render() {
+    const newElement = document.createElement(`div`);
+    newElement.innerHTML = this.template;
+    this._element = newElement.firstChild;
+    this._createListeners();
+    this._element.querySelector(`.trip-point__title`).textContent = `${capitalize(this._type)} ${types.get(this._type).preposition} ${this._name}`;
+    return this._element;
   }
 
   /**
