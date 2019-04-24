@@ -6,10 +6,10 @@ const BAR_HEIGHT = 55;
 
 /**
  * функция, генерирующая данные для диаграммы
- * @param {Array} array - массив объектов с данными
+ * @param {Array} points - массив объектов с данными
  * @return {Array} - массив с данными для диаграммы
  */
-const getData = (array) => array.reduce((acc, element) => {
+const getData = (points) => points.reduce((acc, element) => {
   const currentValue = element.type;
   const newAcc = acc;
   const target = newAcc.find((item) => item.type === currentValue);
@@ -66,31 +66,31 @@ export default class Stat {
    * @return {Array} массив объектов-конфигов для диаграмм
    */
   _getConfig() {
-    const data = getData(this._points);
-    const money = [...data].sort((first, second) => second.total - first.total);
-    const transport = [...data].filter((it) => types.get(it.type).category === `transport`).sort((first, second) => second.count - first.count);
-    const duration = [...data].sort((first, second) => second.duration - first.duration);
+    const dataForChart = getData(this._points);
+    const moneyDataForChart = [...dataForChart].sort((first, second) => second.total - first.total);
+    const transportDataForChart = [...dataForChart].filter((it) => types.get(it.type).category === `transport`).sort((first, second) => second.count - first.count);
+    const durationDataForChart = [...dataForChart].sort((first, second) => second.duration - first.duration);
     const moneyConfig = {
       target: document.querySelector(`.statistic__money`),
       type: `money`,
-      labels: money.map((it) => `${types.get(it.type).icon} ${it.type.toUpperCase()}`),
-      dataSet: money.map((it) => it.total),
-      formatter: (val) => `€ ${val}`
+      labels: moneyDataForChart.map((it) => `${types.get(it.type).icon} ${it.type.toUpperCase()}`),
+      dataSet: moneyDataForChart.map((it) => it.total),
+      formatter: (value) => `€ ${value}`
     };
     const transportConfig = {
       target: document.querySelector(`.statistic__transport`),
       type: `transport`,
-      labels: transport.map((it) => `${types.get(it.type).icon} ${it.type.toUpperCase()}`),
-      dataSet: transport.map((it) => it.count),
-      formatter: (val) => `x${val}`
+      labels: transportDataForChart.map((it) => `${types.get(it.type).icon} ${it.type.toUpperCase()}`),
+      dataSet: transportDataForChart.map((it) => it.count),
+      formatter: (value) => `x${value}`
     };
     const durationConfig = {
       target: document.querySelector(`.statistic__time-spend`),
       type: `time spent`,
-      labels: duration.map((it) => `${types.get(it.type).icon} ${it.type.toUpperCase()}`),
-      dataSet: duration.map((it) => it.duration),
-      formatter: (val) => {
-        const totalHours = Math.round(val / 3600000);
+      labels: durationDataForChart.map((it) => `${types.get(it.type).icon} ${it.type.toUpperCase()}`),
+      dataSet: durationDataForChart.map((it) => it.duration),
+      formatter: (value) => {
+        const totalHours = Math.round(value / 3600000);
         if (totalHours < 24) {
           return `${totalHours} H`;
         }

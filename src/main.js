@@ -15,7 +15,7 @@ const api = new API({
   endPoint: END_POINT,
   authorization: AUTHORIZATION
 });
-const FILTERS = [
+const filterOptions = [
   {
     caption: `everything`,
     isChecked: true,
@@ -27,7 +27,7 @@ const FILTERS = [
     caption: `past`,
   },
 ];
-const SORTING = [
+const sortingOptions = [
   {
     caption: `event`,
     isChecked: true,
@@ -99,24 +99,23 @@ const renderStats = (points) => {
  */
 const getDays = (points) => points.reduce((acc, point) => {
   const currentDay = moment(point.dateFrom).format(`DD MMMM YYYY`);
-  const newAcc = acc;
-  const index = newAcc.findIndex((array) => array.every((item) => item.day === currentDay));
+  const index = acc.findIndex((dayPoints) => dayPoints.every((dayPoint) => dayPoint.day === currentDay));
   if (index >= 0) {
-    newAcc[index].push({day: currentDay, point});
+    acc[index].push({day: currentDay, point});
   } else {
-    newAcc.push([{day: currentDay, point}]);
+    acc.push([{day: currentDay, point}]);
   }
-  return newAcc;
+  return acc;
 }, []);
 
 /**
  * функция для отрисовки фильтров
- * @param {Array} filters - массив объектов с данными о фильтрах
+ * @param {Array} options - массив объектов с данными о фильтрах
  * @param {Object} container - DOM-элемент, в который нужно отрисовать фильтры
  */
-const renderFilters = (filters, container) => {
+const renderFilters = (options, container) => {
   container.innerHTML = ``;
-  const filtersContainer = new FiltersContainer(filters);
+  const filtersContainer = new FiltersContainer(options);
   filtersContainer.onFilter = (evt) => {
     const filterName = evt.target.htmlFor;
     filterOption = filterName.split(`-`)[1];
@@ -150,12 +149,12 @@ const sortPoints = (points, option) => {
 
 /**
  * функция для отрисовки параметров сортировки
- * @param {Object} sorting - массив объектов с данными параметров сортировки
+ * @param {Object} options - массив объектов с данными параметров сортировки
  * @param {Object} container - DOM-элемент, в который нужно отрисовать параметр сортировки
  */
-const renderSorting = (sorting, container) => {
+const renderSorting = (options, container) => {
   container.innerHTML = ``;
-  const sortingContainer = new SortingContainer(sorting);
+  const sortingContainer = new SortingContainer(options);
   sortingContainer.onSort = (evt) => {
     const sortName = evt.target.htmlFor;
     sortOption = sortName.split(`-`)[1];
@@ -197,7 +196,7 @@ const renderPoints = (points, container) => {
        * @param {Object} evt - объект события Event
        */
       const onOffer = (evt) => {
-        const offerIndex = point.offers.findIndex((it) => it.title === evt.target.value);
+        const offerIndex = point.offers.findIndex((offer) => offer.title === evt.target.value);
         const currentOffer = point.offers[offerIndex];
         const currentPrice = currentOffer.price;
         const totalPriceDifference = evt.target.checked ? currentPrice : -currentPrice;
@@ -279,6 +278,7 @@ const renderPoints = (points, container) => {
       const onEsc = () => {
         pointComponent.render();
         container.replaceChild(pointComponent.element, pointEditComponent.element);
+        pointEditComponent.unrender();
         totalPrice = oldTotalPrice;
         totalCostElement.innerHTML = `&euro;&nbsp;${totalPrice}`;
       };
@@ -388,7 +388,9 @@ const onNewEventButtonClick = () => {
   newPointComponent.onType = onType;
   const onDelete = () => {
     newEventButton.addEventListener(`click`, onNewEventButtonClick);
-    newPointComponent.element.remove();
+    newPointComponent.unrender();
+    totalPrice = oldTotalPrice;
+    totalCostElement.innerHTML = `&euro;&nbsp;${totalPrice}`;
   };
   newPointComponent.onDelete = onDelete;
   const onOffer = (evt) => {
@@ -402,7 +404,7 @@ const onNewEventButtonClick = () => {
   newPointComponent.onOffer = onOffer;
   const onEsc = () => {
     newEventButton.addEventListener(`click`, onNewEventButtonClick);
-    newPointComponent.element.remove();
+    newPointComponent.unrender();
     totalPrice = oldTotalPrice;
     totalCostElement.innerHTML = `&euro;&nbsp;${totalPrice}`;
   };
@@ -432,8 +434,6 @@ const onNewEventButtonClick = () => {
         unblock();
         localPoints.push(newPoint);
         localPoints = localPoints.sort((first, second) => first.dateFrom - second.dateFrom);
-        // renderFilters(FILTERS, tripFilterElement);
-        // renderSorting(SORTING, tripSortingElement);
         renderDays(localPoints);
         newEventButton.addEventListener(`click`, onNewEventButtonClick);
       })
@@ -459,8 +459,8 @@ tableControl.addEventListener(`click`, onTableControlClick);
 tripDayElement.textContent = `Loading route...`;
 api.getPoints().then((points) => {
   localPoints = points.sort((first, second) => first.dateFrom - second.dateFrom);
-  renderFilters(FILTERS, tripFilterElement);
-  renderSorting(SORTING, tripSortingElement);
+  renderFilters(filterOptions, tripFilterElement);
+  renderSorting(sortingOptions, tripSortingElement);
   renderDays(localPoints);
 }).catch(() => {
   tripDayElement.textContent = `Something went wrong while loading your route info. Check your connection or try again later`;

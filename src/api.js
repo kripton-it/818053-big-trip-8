@@ -15,9 +15,8 @@ const Method = {
 const checkStatus = (response) => {
   if (response.status >= 200 && response.status < 300) {
     return response;
-  } else {
-    throw new Error(`${response.status}: ${response.statusText}`);
   }
+  throw new Error(`${response.status}: ${response.statusText}`);
 };
 
 /**
@@ -117,9 +116,9 @@ export default class API {
 
     return fetch(`${this._endPoint}/${url}`, {method, body, headers})
     .then(checkStatus)
-    .catch((err) => {
-      window.console.error(`fetch error: ${err}`);
-      throw err;
+    .catch((error) => {
+      window.console.error(`fetch error: ${error}`);
+      throw error;
     });
   }
 }

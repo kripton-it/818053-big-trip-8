@@ -41,7 +41,7 @@ const types = new Map([
 /**
  * Форматирование длительности точки.
  *
- * @param  {Array} interval - время в мс.
+ * @param {number} interval - время в мс.
  * @return {string} форматированная строка.
  */
 const getDuration = (interval) => {

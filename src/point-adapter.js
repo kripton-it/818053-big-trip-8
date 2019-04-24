@@ -28,9 +28,9 @@ export default class PointAdapter {
    * @return {object} - преобразованный объект
    */
   static toRAW(point) {
-    const name = point.destination.name;
-    const description = point.destination.description;
-    const pictures = point.destination.photos;
+    const name = point.destination.name || ``;
+    const description = point.destination.description || ``;
+    const pictures = point.destination.photos || [];
     return {
       'id': point.id || null,
       'type': point.type,

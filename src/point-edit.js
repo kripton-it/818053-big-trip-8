@@ -261,9 +261,11 @@ export default class PointEdit extends Component {
     */
   destinationUpdate(name) {
     const destination = this._availableDestinations.find((dest) => dest.name === name);
-    this._description = destination.description;
-    this._photos = destination.pictures;
-    this._element.querySelector(`.point__destination-text`).innerHTML = this._description;
+    if (destination) {
+      this._description = destination.description;
+      this._photos = destination.pictures;
+    }
+    this._element.querySelector(`.point__destination-text`).textContent = this._description;
     const images = this._photos.map((photo) => `
       <img src="${photo.src}" alt="${photo.description}" class="point__destination-image">
     `).join(``);
@@ -284,7 +286,7 @@ export default class PointEdit extends Component {
       };
     });
     const offers = this._offers.map((offer) => {
-      const offerTitle = offer.title;
+      const offerTitle = offer.title.replace(/<|>/g, ``);
       return `
       <input class="point__offers-input visually-hidden" type="checkbox" id="${offerTitle}-${this._id}" name="offer" value="${offerTitle}"${offer.accepted ? ` checked` : ``}>
       <label for="${offerTitle}-${this._id}" class="point__offers-label">
@@ -294,8 +296,7 @@ export default class PointEdit extends Component {
     }).join(``);
     this._element.querySelector(`.point__offers-wrap`).innerHTML = offers;
     this._element.querySelector(`.travel-way__toggle`).checked = false;
-    this._element.querySelector(`.point__destination-label`).innerHTML = `${capitalize(this._type)} ${types.get(this._type).preposition}`;
-    this.updatePrice();
+    this._element.querySelector(`.point__destination-label`).textContent = `${capitalize(this._type)} ${types.get(this._type).preposition}`;
   }
 
   /**
@@ -321,8 +322,8 @@ export default class PointEdit extends Component {
     this._element.querySelector(`.point__destination-input`).addEventListener(`change`, this._onDestinationChange);
     document.addEventListener(`keyup`, this._onEscPress);
 
-    const dateStartInput = this.element.querySelector(`input[name="date-start"]`);
-    const dateEndInput = this.element.querySelector(`input[name="date-end"]`);
+    const dateStartInput = this._element.querySelector(`input[name="date-start"]`);
+    const dateEndInput = this._element.querySelector(`input[name="date-end"]`);
     flatpickr(dateStartInput, {
       enableTime: true,
       altInput: true,
@@ -350,7 +351,9 @@ export default class PointEdit extends Component {
     this._element.querySelector(`.point__offers-wrap`).removeEventListener(`change`, this._onOfferChange);
     this._element.querySelector(`.travel-way__select`).removeEventListener(`change`, this._onTypeChange);
     this._element.querySelector(`.point__destination-input`).removeEventListener(`change`, this._onDestinationChange);
-    document.removeEventListener(`click`, this._onEscPress);
+    document.removeEventListener(`keyup`, this._onEscPress);
+    flatpickr(this._element.querySelector(`input[name="date-start"]`)).destroy();
+    flatpickr(this._element.querySelector(`input[name="date-end"]`)).destroy();
   }
 
   /**
@@ -481,7 +484,10 @@ export default class PointEdit extends Component {
       'price': (value) => (target.price = +value),
       'travel-way': (value) => (target.type = value),
       'offer': (value) => (target.offers.find((offer) => offer.title === value).accepted = true),
-      'destination': (value) => (target.destination = this._availableDestinations.find((destination) => destination.name === value)),
+      'destination': (value) => {
+        const currentDestination = this._availableDestinations.find((destination) => destination.name === value);
+        target.destination = currentDestination ? currentDestination : {name: value};
+      },
       'favorite': () => (target.isFavorite = true)
     };
   }
